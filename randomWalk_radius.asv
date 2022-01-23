@@ -3,21 +3,28 @@ clear all; clc; close all; % clean up
 
 num_particle      = 20; 
 START_TIME        = 0; %sec
-STOP_TIME         = 10; %sec
+STOP_TIME         = 200; %sec
 movements_per_sec = 1;
 numberOfSteps     = (STOP_TIME-START_TIME)*movements_per_sec;
 
-radius_x = 0.7;
-radius_y = 0.7;
+radius_x = 1.5;
+radius_y = 1.5;
 
 
 % vectors for random steps
 rand_x_steps = (rand((STOP_TIME-START_TIME)*movements_per_sec,num_particle)-0.5);
 rand_y_steps = (rand((STOP_TIME-START_TIME)*movements_per_sec,num_particle)-0.5);
 
-xCoords = zeros((STOP_TIME-START_TIME)*movements_per_sec+20,num_particle); %particle start loc is assume 0,0
-yCoords = zeros((STOP_TIME-START_TIME)*movements_per_sec+20,num_particle);
+extra_rand_x_steps = (rand((STOP_TIME-START_TIME)*movements_per_sec,num_particle)-0.5);
+extra_rand_y_steps = (rand((STOP_TIME-START_TIME)*movements_per_sec,num_particle)-0.5);
 
+
+xCoords = zeros((STOP_TIME-START_TIME)*movements_per_sec,num_particle); %particle start loc is assume 0,0
+yCoords = zeros((STOP_TIME-START_TIME)*movements_per_sec,num_particle);
+
+% DISK
+x_center = 0; y_center = 0;
+[disk_boundries,xx,yy] = makeDisk(radius_x,x_center,y_center);
 
 % loop through all steps
 % TO DO:
@@ -25,40 +32,48 @@ yCoords = zeros((STOP_TIME-START_TIME)*movements_per_sec+20,num_particle);
 for step = 2 : numberOfSteps
     for idx = 1:num_particle
             % x-loc
+            
+        test_x = xCoords(step-1, idx) + rand_x_steps(step,idx);
+        test_y = yCoords(step-1, idx) + rand_y_steps(step,idx);
+
+        if idx > 1
+            %checker_vec will be set to 1 where they match
+            checker_vec = zeros(1,idx);
+            all_zeros =  zeros(1,idx);
+            for checker = 1:(idx-1)
+                % - two particles cannot exist at same point  
+                if (test_x == xCoords(step-1, checker) && test_y == yCoords(step-1, checker))
+                % x-loc
+                test_x = xCoords(step-1, idx) + extra_rand_x_steps(step,idx);%x1
+                disp("beep");
+                % y-loc
+                test_y = yCoords(step-1, idx) + extra_rand_y_steps(step,idx);%y1
+                end
+            end %end of checker
+        end %end of idx > 1
+
+        CHECKER = CheckCircleBounds(x_center,test_x,y_center,test_y,radius_x);
+
+        if (CHECKER == 1 || CHECKER == 2)
+            % x-loc
             xCoords(step, idx) = xCoords(step-1, idx) + rand_x_steps(step,idx);%x1
             % y-loc
             yCoords(step, idx) = yCoords(step-1, idx) + rand_y_steps(step,idx);%y1
-        
-        % - two particles cannot exist at same point    
-        if (abs(xCoords(step, idx)) >= radius_x 
+
+        elseif (CHECKER == 3)
+            % is outside the circle
+            % make the value opposite
             xCoords(step, idx) = xCoords(step-1, idx) - rand_x_steps(step,idx);%x1
-        end
-        
-        if (abs(yCoords(step, idx)) >= radius_y
-            yCoords(step, idx) = yCoords(step-1, idx) - rand_y_steps(step,idx);%y1        end
-        end
-            
-            if idx > 1
+            yCoords(step, idx) = yCoords(step-1, idx) - rand_y_steps(step,idx);%y1
+%             disp(xCoords(step-1, idx) - rand_x_steps(step,idx));
+%             disp(yCoords(step-1, idx) - rand_y_steps(step,idx));
 
-                %checker_vec will be set to 1 where they match
-                checker_vec = zeros(1,idx);
-                all_zeros =  zeros(1,idx);
-                for checker = 1:idx
-                    if (xCoords(step, idx) == xCoords(step-1, idx-1) && yCoords(step, idx) == yCoords(step-1, idx-1))
-                    % x-loc
-                    xCoords(step, idx) = xCoords(step-1, idx) + rand_x_steps(step+1,idx);%x1
-                    % y-loc
-                    yCoords(step, idx) = yCoords(step-1, idx) + rand_y_steps(step+1,idx);%y1
-                    end
-
-                end %end of checker
-            end %end of idx > 1
+        end            
     end %end of idx
 end
 
 
 %% Plotting walk for two particles
-colour = ['b','k'];
 
 figure; hold on
 
@@ -68,4 +83,25 @@ for particle = 1:num_particle
 end
 line(xlim, [0,0], 'Color', 'k', 'LineWidth', 1);
 line([0,0], ylim, 'Color', 'k', 'LineWidth', 1);
+
+viscircles([x_center, y_center],radius_x,'Color','k','LineWidth',2)
 hold off
+
+%%
+%checker if value is within circle
+% 1) if (x-x0)^2 + (y-y0)^2 < r^2, the point (x,y) is inside the circle,
+% 2) if (x-x0)^2 + (y-y0)^2 == r^2, the point (x,y) is on the circle, and
+% 3) if (x-x0)^2 + (y-y0)^2 > r^2, the point (x,y) is outside the circle.
+ 
+
+function result = CheckCircleBounds(x0,x,y0,y,r)
+
+    if ( ((x-x0)^2 + (y-y0)^2) < r^2)
+        result = 1; % (x,y) is inside the circle
+    elseif ( ((x-x0)^2 + (y-y0)^2) == r^2)
+        result = 2; % (x,y) is on the circle
+    else
+        result = 3; % (x,y) is outside the circle
+    end
+    
+end

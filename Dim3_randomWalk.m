@@ -1,10 +1,10 @@
 %% Simulate Random Walk for n Particle that Starts at Origin in 3D
 clear all; clc; close all; % clean up
 
-num_particle      = 20; 
+num_particle      = 100; 
 START_TIME        = 0; %sec
-STOP_TIME         = 500; %sec
-movements_per_sec = 8;
+STOP_TIME         = 2000; %sec
+movements_per_sec = 1;
 numberOfSteps     = (STOP_TIME-START_TIME)*movements_per_sec;
 
 radius = 10;
@@ -41,7 +41,6 @@ sphere_Z(cutout_idx) = 0;
 % TO DO:
     % - set a radius
 for step = 2 : numberOfSteps
-    
     for idx = 1:num_particle
         test_x = xCoords(step-1, idx) + rand_x_steps(step,idx);
         test_y = yCoords(step-1, idx) + rand_y_steps(step,idx);
@@ -89,7 +88,9 @@ plot3(other_coords,line_,other_coords,'Color', 'k', 'LineWidth', 1);
 plot3(other_coords,other_coords,line_,'Color', 'k', 'LineWidth', 1);
 
 mesh(sphere_X,sphere_Y,sphere_Z,'edgealpha',0.3,'facealpha',0.5)
-
+xlabel('x')
+ylabel('y')
+zlabel('z')
 hold off
 
 %% Finding average distances from origin 
@@ -148,11 +149,13 @@ function result = CheckCutOut(origin,x,y,z, sphere_X,sphere_Y,sphere_Z,cut_out_i
 %         result = 0;
 %     end
 
-    if ((y >= 10) && (abs(x) < 3))
+    if ((y >= 10) && (y < 11.2)  && (abs(x) < 2.5))
 %         if (d(cut_out_idx) <= 3)
             result = 1;
 %             disp("beep");
 %         end 
+    elseif (y >= 11)
+        result = 1;
     else
         result = 0;
     end

@@ -34,24 +34,24 @@ for step = 2 : numberOfSteps
         test_x = xCoords(step-1, idx) + rand_x_steps(step,idx);
         test_y = yCoords(step-1, idx) + rand_y_steps(step,idx);
 
+        % This section checks if any particles exist at the same place at
+        % the same time.
         if idx > 1
             %checker_vec will be set to 1 where they match
-            checker_vec = zeros(1,idx);
-            all_zeros =  zeros(1,idx);
-            for checker = 1:(idx-1)
+            for checker = 1:(idx-1) %this section will probably need extention
                 % - two particles cannot exist at same point  
-                if (test_x == xCoords(step-1, checker) && test_y == yCoords(step-1, checker))
-                % x-loc
-                test_x = xCoords(step-1, idx) + extra_rand_x_steps(step,idx);%x1
-                disp("beep");
-                % y-loc
-                test_y = yCoords(step-1, idx) + extra_rand_y_steps(step,idx);%y1
+                if ( (test_x == xCoords(step-1, checker) ) && (test_y == yCoords(step-1, checker)) )
+                    disp("MATCH");
+                    % x-loc
+                    test_x = xCoords(step-1, idx) + extra_rand_x_steps(step,idx);%x1
+                    % y-loc
+                    test_y = yCoords(step-1, idx) + extra_rand_y_steps(step,idx);%y1
                 end
             end %end of checker
         end %end of idx > 1
 
+        % This section checks the set radius bounds
         CHECKER = CheckCircleBounds(x_center,test_x,y_center,test_y,radius);
-
         if (CHECKER == 1 || CHECKER == 2)
             % x-loc
             xCoords(step, idx) = xCoords(step-1, idx) + rand_x_steps(step,idx);%x1
@@ -63,7 +63,6 @@ for step = 2 : numberOfSteps
             % make the value opposite
             xCoords(step, idx) = xCoords(step-1, idx) - rand_x_steps(step,idx);%x1
             yCoords(step, idx) = yCoords(step-1, idx) - rand_y_steps(step,idx);%y1
-
         end            
     end %end of idx
 end
@@ -80,7 +79,7 @@ end
 line(xlim, [0,0], 'Color', 'k', 'LineWidth', 1);
 line([0,0], ylim, 'Color', 'k', 'LineWidth', 1);
 
-viscircles([x_center, y_center],radius,'Color','k','LineWidth',2)
+viscircles([x_center, y_center],radius,'Color','k','LineWidth',2);
 hold off
 
 
@@ -104,11 +103,11 @@ averageFinalY = mean(yCoords(end,:));
  
 function result = CheckCircleBounds(x0,x,y0,y,r)
 
-    if ( ((x-x0)^2 + (y-y0)^2) < r^2)
+    if ( sqrt((abs(x)-x0)^2 + (abs(y)-y0)^2) < r)
         result = 1; % (x,y) is inside the circle
-    elseif ( ((x-x0)^2 + (y-y0)^2) == r^2)
+    elseif ( sqrt((abs(x)-x0)^2 + (abs(y)-y0)^2) == r)
         result = 2; % (x,y) is on the circle
-    else
+    elseif ( sqrt((abs(x)-x0)^2 + (abs(y)-y0)^2) > r)
         result = 3; % (x,y) is outside the circle
     end
     

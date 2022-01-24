@@ -1,13 +1,13 @@
 %% Simulate Random Walk for n Particle that Starts at Origin in 3D
 clear all; clc; close all; % clean up
 
-num_particle      = 50; 
+num_particle      = 40; 
 START_TIME        = 0; %sec
-STOP_TIME         = 500; %sec
-movements_per_sec = 2;
+STOP_TIME         = 700; %sec
+movements_per_sec = 4;
 numberOfSteps     = (STOP_TIME-START_TIME)*movements_per_sec;
 
-radius = 10;
+radius = 8;
 step_count = (STOP_TIME-START_TIME)*movements_per_sec;
 
 % vectors for random steps
@@ -30,13 +30,12 @@ zCoords = zeros(step_count,num_particle);
 x_center = 0; y_center = 0; z_center = 0;
 
 % Generate Sphere with hole
-N=100;  MainSphereOrigin = [x_center,y_center,z_center];
+N=80;  MainSphereOrigin = [x_center,y_center,z_center];
 % CutOutRadius = 5; 
-MainSphereRadius = 10;
-CuttOutRadius = [5 5 5];
-CuttOutCenter = [10 50 25];
-% CuttOutRadius = 20;
-% CuttOutCenter = 10 ;
+MainSphereRadius = 8;
+CuttOutRadius = [4 4 4];
+CuttOutCenter = [10 30 -30];
+
 % [sphere_X,sphere_Y,sphere_Z,cutout_disk] = SphereHoles(MainSphereRadius,CutOutRadius,MainSphereOrigin,N);
 [sphere_X,sphere_Y,sphere_Z,cutout_disk,cutout_idx] = CutOutSphere(MainSphereRadius,CuttOutRadius,CuttOutCenter,N);
 
@@ -55,8 +54,8 @@ for step = 2 : numberOfSteps
         % This section checks the set radius bounds
         CHECKER = CheckSphereBounds([x_center,y_center,z_center],test_x,test_y,test_z,radius);
         
-        % Let it keep increasing as it is pasing the hole
-        if (CheckCutOut(MainSphereOrigin,test_x,test_y,test_z, sphere_X,sphere_Y,sphere_Z,cutout_disk,cutout_idx) && CHECKER==3)
+        if (CHECKER==3 && CheckCutOut(MainSphereOrigin,test_x,test_y,test_z, sphere_X,sphere_Y,sphere_Z,cutout_disk,cutout_idx) )
+            %let it keep increasing as it is pasing the hole
             CHECKER = 1;
         end
 
@@ -136,7 +135,6 @@ function result = CheckSphereBounds(origin,x,y,z,r)
     end
     
 end
-
 %need to let particle out if it is within the cut out region
 function result = CheckCutOut(origin,x,y,z, sphere_X,sphere_Y,sphere_Z,cutout_disk,cutout_idx)
 %just assume start at origin
@@ -144,6 +142,8 @@ function result = CheckCutOut(origin,x,y,z, sphere_X,sphere_Y,sphere_Z,cutout_di
 
     %try testing each of the x,y,x and x,y,z sphere values in a loop
     for i = 1:size(cutout_idx,1)
+        
+% cutout_idx(i,(find(cutout_idx(i,:)>1)))
         
         S_index = cutout_idx(i,find(cutout_idx(i,:)~=0));
         new_S_index = 1:length(find(squeeze(cutout_disk(i,:,:))==1));
@@ -161,15 +161,15 @@ function result = CheckCutOut(origin,x,y,z, sphere_X,sphere_Y,sphere_Z,cutout_di
             
             Sx = sphere_X_val(num_cutouts,i);
             Sy = sphere_Y_val(num_cutouts,i);
-            Sz = sphere_Y_val(num_cutouts,i);
+            Sz = sphere_Z_val(num_cutouts,i);
             
             %check if it is meant to be negative or positive in the axis limits
             if ( (Sx >= 0) && (Sy >= 0) && (Sz >= 0) )
                 
                 if ( (Sx <= x) && (Sy <= y) && (Sz <= z) )
+%                     fprintf("Logic %d, Sx = %.2f, Sy = %.2f, Sz = %.2f, x=%.2f y=%.2f z=%.2f\n",((Sx <= x) && (Sy <= y) && (Sz <= z) ),Sx,Sy,Sz,x,y,z)
                     result = 1;
                 end
-                
                 
             elseif ( (Sx >= 0) && (Sy >= 0) && (Sz < 0) )
                 
@@ -183,7 +183,7 @@ function result = CheckCutOut(origin,x,y,z, sphere_X,sphere_Y,sphere_Z,cutout_di
                     result = 1;
                 end
                 
-            elseif ( (Sx < 0) && (Sy>= 0) && (Sz >= 0) )
+            elseif ( (Sx < 0) && (Sy >= 0) && (Sz >= 0) )
                 
                 if ( (Sx >= x) && (Sy <= y) && (Sz <= z) )
                     result = 1;
@@ -193,17 +193,31 @@ function result = CheckCutOut(origin,x,y,z, sphere_X,sphere_Y,sphere_Z,cutout_di
                 
                 if ( (Sx <= x) && (Sy >= y) && (Sz >= z) )
                     result = 1;
-                end      
+                end   
                 
+            elseif ( (Sx < 0) && (Sy < 0) && (Sz >= 0) )
+                
+                if ( (Sx  >= x) && (Sy >= y) && (Sz <= z) )
+                    result = 1;
+                end 
+                
+            elseif ( (Sx < 0) && (Sy >= 0) && (Sz < 0) )
+                
+                if ( (Sx  >= x) && (Sy <= y) && (Sz >= z) )
+                    result = 1;
+                end 
             
             elseif ( (Sx < 0) && (Sy < 0) && (Sz < 0) )
                 
                 if ( (Sx >= x) && (Sy >= y) && (Sz >= z) )
                     result = 1;
-                end      
+                end  
                 
             end %end of if,elseif,..... statement
         end %end of all index checks
     end %end of num_counts 
 
 end
+
+
+

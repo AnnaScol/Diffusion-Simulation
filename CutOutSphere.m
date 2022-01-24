@@ -5,13 +5,13 @@ function [Sx,Sy,Sz,cutout_disks,cutout_idx] = CutOutSphere(MainSphereRadius,Cutt
 
     % CuttOutOrigin the origin will be the place along the mainsphere edge
     phi=linspace(0,pi,N);
-    theta=linspace(0,2*pi,2*N);
+    theta=linspace(0,2*pi,N);
     [phi,theta]=meshgrid(phi,theta);
 
-    cutout_disks = zeros(length(CuttOutRadius),2*N,N);
+    cutout_disks = zeros(length(CuttOutRadius),N,N);
     % cutout_idx = zeros(length(CuttOutRadius),200);
     for i = 1:length(CuttOutRadius)
-        cutout_disks(i,:,:) = makeDisk(CuttOutRadius(i),N,abs(CuttOutCenter(i)),2*N,N);
+        cutout_disks(i,:,:) = makeDisk(CuttOutRadius(i),N,abs(CuttOutCenter(i)),N,N);
         if(CuttOutCenter(i)< 0)
             cutout_disks(i,:,:) = flip(cutout_disks(i,:,:));
         end
@@ -24,12 +24,14 @@ function [Sx,Sy,Sz,cutout_disks,cutout_idx] = CutOutSphere(MainSphereRadius,Cutt
     y=MainSphereRadius.*sin(phi).*sin(theta);
     z=MainSphereRadius.*cos(phi);
 
+
+    Sx = x; Sy = y; Sz = z;
+    
 %     for i = 1:length(CuttOutRadius)
 %         x(cutout_idx(i,(find(cutout_idx(i,:)>1)))) = nan;
 %         y(cutout_idx(i,(find(cutout_idx(i,:)>1)))) = nan;
 %         z(cutout_idx(i,(find(cutout_idx(i,:)>1)))) = nan; 
 %     end
-    Sx = x; Sy = y; Sz = z;
 %     figure;
 %     mesh(x,y,z);
 

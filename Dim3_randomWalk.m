@@ -3,8 +3,8 @@ clear all; clc; close all; % clean up
 
 num_particle      = 20; 
 START_TIME        = 0; %sec
-STOP_TIME         = 200; %sec
-movements_per_sec = 5;
+STOP_TIME         = 500; %sec
+movements_per_sec = 8;
 numberOfSteps     = (STOP_TIME-START_TIME)*movements_per_sec;
 
 radius = 10;
@@ -35,6 +35,7 @@ CutOutRadius = 5;
 MainSphereRadius = 10;
 [sphere_X,sphere_Y,sphere_Z,cutout_disk] = SphereHoles(MainSphereRadius,CutOutRadius,MainSphereOrigin,N);
 cutout_idx = find(cutout_disk==1);
+sphere_Z(cutout_idx) = 0;
 %%
 % loop through all steps
 % TO DO:
@@ -49,7 +50,7 @@ for step = 2 : numberOfSteps
         % This section checks the set radius bounds
         CHECKER = CheckSphereBounds([x_center,y_center,z_center],test_x,test_y,test_z,radius);
         
-        if (CheckCutOut(MainSphereOrigin,test_x,test_y,test_z, sphere_X,sphere_Y,sphere_Z,cutout_idx) & CHECKER==3)
+        if (CheckCutOut(MainSphereOrigin,test_x,test_y,test_z, sphere_X,sphere_Y,sphere_Z,cutout_idx) && CHECKER==3)
             %let it keep increasing as it is pasing the hole
             CHECKER = 1;
         end
@@ -87,7 +88,8 @@ plot3(line_,other_coords,other_coords,'Color', 'k', 'LineWidth', 1);
 plot3(other_coords,line_,other_coords,'Color', 'k', 'LineWidth', 1);
 plot3(other_coords,other_coords,line_,'Color', 'k', 'LineWidth', 1);
 
-% viscircles([x_center, y_center],radius,'Color','k','LineWidth',2);
+mesh(sphere_X,sphere_Y,sphere_Z,'edgealpha',0.3,'facealpha',0.5)
+
 hold off
 
 %% Finding average distances from origin 
@@ -137,13 +139,25 @@ function result = CheckCutOut(origin,x,y,z, sphere_X,sphere_Y,sphere_Z,cut_out_i
     %if the magntidue is equal to the radius then we can check if its
     %passing point is the hole, where the hole indicies are at cut_out_idx
     %defined as a vector
-    if ((cutout_test_case >= 110)) 
-        if (d(cut_out_idx) <= 3)
+%     if ((cutout_test_case >= 110)) 
+%         if (d(cut_out_idx) <= 3)
+%             result = 1;
+%             disp("beep");
+%         end 
+%     else
+%         result = 0;
+%     end
+
+    if ((y >= 10) && (abs(x) < 3))
+%         if (d(cut_out_idx) <= 3)
             result = 1;
-            disp("beep");
-        end 
+%             disp("beep");
+%         end 
     else
         result = 0;
     end
+    
+    
+    
          
 end

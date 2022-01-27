@@ -22,7 +22,7 @@ ldelta = 0.030; %ms
 sdelta = 0.015; %ms
 D = 2.0e-12;    %m^2/s
 
-nSpins = 5000;
+nSpins = 1000;
 start_position = zeros(1,nSpins);
 % dz = (randn(1,nSpins)-0.5)*sqrt(2*D*(ldelta-sdelta/3)); 
 
@@ -37,7 +37,7 @@ T1 = 850*(10^-3);
 T2 = 60*(10^-3); 
 TE = 45*(10^-3);
 
-constraint_radius = 100;
+constraint_radius = 2.5e-5;
 
 % %%   %% %
 for i=1:nTimeSteps %i starts at 1 go's to 15000
@@ -93,7 +93,10 @@ for i = 1:nG
     
     for j = 2:nTimeSteps
         dz = (-1 + (2)*rand(3,nSpins)).*sqrt(2*D*(ldelta-sdelta/3));
-        deltaZ = dz+deltaZ; %adding a random step to each spin in each timestep between diffusion grads
+        temp = dz+deltaZ; %adding a random step to each spin in each timestep between diffusion grads
+        
+        deltaZ = InBounds(constraint_radius,temp(1,:),temp(3,:),temp(2,:), dz(1,:),dz(2,:),dz(3,:));
+        
         dB0 = gradAmp(:,j).*deltaZ;
         
         [mT,mZ] =  bloch(dt,dB0,rfPulse(j),T1,T2,mT,mZ); 
@@ -130,14 +133,28 @@ title('Final location of particle')
 
 %% FUNCTIONS %%
 
-function result = InBounds(r,x,y,z)
+function result = InBounds(r,x0,y0,z0,dx,dy,dz)
+
+    x1 = zeros(1,length(x0));
+    y1 = zeros(1,length(x0));
+    z1 = zeros(1,length(x0));
+    
     origin = [0 0 0];
-    mag = sqrt((abs(x)-origin(1))^2 + (abs(y)-origin(2))^2 + (abs(z)-origin(3))^2);
-    if ( mag < r)
-        result = 1; % (x,y) is inside the circle
-    elseif ( mag == r)
-        result = 2; % (x,y) is on the circle
-    elseif ( mag > r)
-        result = 3; % (x,y) is outside the circle
+    mag = sqrt((abs(x0)-origin(1)).^2 + (abs(y0)-origin(2)).^2 + (abs(z0)-origin(3)).^2);
+    
+    for i = 1:length(mag)
+        
+        if ( mag(i) <= r) % (x,y) is inside the circle or on the circle
+            x1(i) = x0(i); 
+            y1(i) = y0(i); 
+            z1(i) = z0(i); 
+            
+        elseif ( mag(i) > r)
+            x1(i) = x0(i)-dx(i); 
+            y1(i) = y0(i)-dy(i); 
+            z1(i) = z0(i)-dz(i);  % (x,y) is outside the circle and reverse step
+        end
     end
+    
+    result = [x1;y1;z1];
 end

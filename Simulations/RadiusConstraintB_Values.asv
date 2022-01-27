@@ -37,6 +37,7 @@ T1 = 850*(10^-3);
 T2 = 60*(10^-3); 
 TE = 45*(10^-3);
 
+constraint_radius = -2.5e-6;
 
 % %%   %% %
 for i=1:nTimeSteps %i starts at 1 go's to 15000
@@ -92,7 +93,10 @@ for i = 1:nG
     
     for j = 2:nTimeSteps
         dz = (-1 + (2)*rand(3,nSpins)).*sqrt(2*D*(ldelta-sdelta/3));
-        deltaZ = dz+deltaZ; %adding a random step to each spin in each timestep between diffusion grads
+        temp = dz+deltaZ; %adding a random step to each spin in each timestep between diffusion grads
+        
+        deltaZ = InBounds(constraint_radius,temp(1,:),temp(3,:),temp(2,:), dz);
+        
         dB0 = gradAmp(:,j).*deltaZ;
         
         [mT,mZ] =  bloch(dt,dB0,rfPulse(j),T1,T2,mT,mZ); 
@@ -129,14 +133,17 @@ title('Final location of particle')
 
 %% FUNCTIONS %%
 
-function result = InBounds(r,x,y,z,origin)
-
-    mag = sqrt((abs(x)-origin(1))^2 + (abs(y)-origin(2))^2 + (abs(z)-origin(3))^2);
-    if ( mag < r)
-        result = 1; % (x,y) is inside the circle
-    elseif ( mag == r)
-        result = 2; % (x,y) is on the circle
-    elseif ( mag > r)
-        result = 3; % (x,y) is outside the circle
+function result = InBounds(r,x0,y0,z0,dx,dy,dz)
+    origin = [0 0 0];
+    mag = sqrt((abs(x)-origin(1)).^2 + (abs(y)-origin(2)).^2 + (abs(z)-origin(3)).^2);
+    
+    for i = 1:length(mag)
+        if ( mag(i) =< r)
+            result = 1; % (x,y) is inside the circle or on the circle
+        elseif ( mag(i) > r)
+            ; % (x,y) is outside the circle and reverse step
+        end
     end
+    
+    result = [x1;y1;z1];
 end

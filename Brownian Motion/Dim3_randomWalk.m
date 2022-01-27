@@ -31,16 +31,12 @@ x_center = 0; y_center = 0; z_center = 0;
 
 % Generate Sphere with hole
 N=80;  MainSphereOrigin = [x_center,y_center,z_center];
-% CutOutRadius = 5; 
 MainSphereRadius = 8;
 CuttOutRadius = [4 4 4];
 CuttOutCenter = [10 30 -30];
 
-% [sphere_X,sphere_Y,sphere_Z,cutout_disk] = SphereHoles(MainSphereRadius,CutOutRadius,MainSphereOrigin,N);
 [sphere_X,sphere_Y,sphere_Z,cutout_disk,cutout_idx] = CutOutSphere(MainSphereRadius,CuttOutRadius,CuttOutCenter,N);
 
-% cutout_idx = find(squeeze(cutout_disk)==1);
-% sphere_Z(cutout_idx) = 0;
 %%
 % loop through all steps
 % TO DO:

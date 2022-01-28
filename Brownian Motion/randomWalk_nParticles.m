@@ -8,8 +8,8 @@ movements_per_sec = 1;
 numberOfSteps = (STOP_TIME-START_TIME)*movements_per_sec;
 
 % vectors for random steps
-rand_x_steps = (rand((STOP_TIME-START_TIME)*movements_per_sec,num_particle)-0.5);
-rand_y_steps = (rand((STOP_TIME-START_TIME)*movements_per_sec,num_particle)-0.5);
+rand_x_steps = (randn((STOP_TIME-START_TIME)*movements_per_sec,num_particle));
+rand_y_steps = (randn((STOP_TIME-START_TIME)*movements_per_sec,num_particle));
 
 xCoords = zeros((STOP_TIME-START_TIME)*movements_per_sec+20,num_particle); %particle start loc is assume 0,0
 yCoords = zeros((STOP_TIME-START_TIME)*movements_per_sec+20,num_particle);

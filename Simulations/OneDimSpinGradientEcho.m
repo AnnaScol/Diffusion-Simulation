@@ -9,14 +9,14 @@ clear all; clc; close all; % clean up
 tmp = matlab.desktop.editor.getActive;  % get location of this script
 cd(fileparts(tmp.Filename));            % set working directory to same
 
-dt    = 1*10^-5; 
+dt    = 10^-5; 
 gamma = 2*pi*42.577*10^6;
 
 
 %Allocate the memory needed
 nTimeSteps  = 7000;%70ms
 rfPulse     = zeros(1,nTimeSteps); %variable to hold a RF waveform
-gradAmp     = zeros(1,nTimeSteps); %variable to hold a gradient waveform
+gradAmp     = zeros(3,nTimeSteps); %variable to hold a gradient waveform
 adc         = zeros(1,nTimeSteps); %variable to hold a gradient waveform
 time        = zeros(1,nTimeSteps); %variable to hold the time points
 
@@ -32,19 +32,18 @@ start_position = zeros(1,nSpins);
 
 % G = ([50]*1e-3); %mT
 
-G = ([0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80]*1e-3); %mT
+G = ([0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,90,100,110]*1e-3); %mT
 
 nG = length(G);
 mFinalVect = zeros(nG,2); %variable to hold the final magnetization calculated for each position
 
 b = gamma^2*G.^2*sdelta^2*(ldelta-sdelta/3);
 
-T1 = 850*(10^-3);
-T2 = 800*(10^-3); 
+T1 = 8500*(10^-3);
+T2 = 8000*(10^-3); 
 TE = 60*(10^-3);
 
-% Make size soma cell and brain cell sizes - vary 0.005-0.1mm
-% radius_values = linspace(0.000005,0.0001,0.000001);
+%make size soma cell and brain cell sizes
 
 % constraint_radius = 2.0e-5;m
 constraint_radius = 5;
@@ -63,7 +62,7 @@ rfPulse(rfStepsE) = apodize_sinc_rf(length(rfStepsE),3,pi/2,dt); %B1+ in Tesla
 
 % First diffusion gradient
 diffusionGradient1_loc = round((1:(sdelta/dt))+ pulsedurE/dt);
-gradAmp(1,diffusionGradient1_loc) =  G(3); %Z gradients in Tesla per meter
+gradAmp(3,diffusionGradient1_loc) =  G(1); %Z gradients in Tesla per meter
 
 %RF Refocusing pules
 pulsedurR = 0.001; % duration of the RF in s
@@ -73,15 +72,9 @@ rfPulse(round(TE/2/dt) +length(rfStepsE)/2 + rfStepsR) = rfPulseR;
 
 % diffusion pulse 2
 diffusionGradient2_loc = round((1:(sdelta/dt)) + pulsedurE/dt + pulsedurR/dt + ldelta/dt);
-gradAmp(1,diffusionGradient2_loc) =  G(3); %Z gradients in Tesla per meter
+gradAmp(3,diffusionGradient2_loc) =  G(1); %Z gradients in Tesla per meter
 
 location = zeros(3,nTimeSteps);
-
-%%% Plotting the data points %%%
-xCoords = zeros(nSpins,nTimeSteps); %particle start loc is assume 0,0,0
-yCoords = zeros(nSpins,nTimeSteps);
-zCoords = zeros(nSpins,nTimeSteps);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % %% PLOTTING %% %
 figure
@@ -91,26 +84,22 @@ xlabel('time (s)'), ylabel('|B_{1}^{+}| (T)');grid on;
 subplot(3,1,2); plot(time,phase(rfPulse),'k-','LineWidth',2);title('RF Pulse Phase'); 
 xlabel('time (s)'), ylabel('|B_{1}^{+}| (T)');grid on;
 
-subplot(3,1,3); plot(time,gradAmp(1,:),'b-','LineWidth',2);title('Slice Select Gradient');
+subplot(3,1,3); plot(time,gradAmp(3,:),'b-','LineWidth',2);title('Slice Select Gradient');
 xlabel('time (s)'), ylabel('G_{z}(T/m)');grid on;
 
 %% Perform seuquence
 
 for i = 1:nG
-    j = 1;
-    gradAmp(1,diffusionGradient1_loc) =  G(i); %Z gradients in Tesla per meter
-    gradAmp(1,diffusionGradient2_loc) =  G(i); %Z gradients in Tesla per meter
+    gradAmp(3,diffusionGradient1_loc) =  G(i); %Z gradients in Tesla per meter
+    gradAmp(3,diffusionGradient2_loc) =  G(i); %Z gradients in Tesla per meter
     
-    mT = zeros(3,nSpins);
-    mZ = ones(3,nSpins);
+    mT = zeros(1,nSpins);
+    mZ = ones(1,nSpins);
     
     %starting spin locations
     r = zeros(3,nSpins);
     [mT,mZ] =  bloch(dt,r,0,T1,T2,mT,mZ); 
-    xCoords(i, j) = r(1);
-    yCoords(i, j) = r(2);
-    zCoords(i, j) = r(3);
-        
+    
     for j = 2:nTimeSteps
         
         %%% Bounds checking %%%
@@ -123,13 +112,9 @@ for i = 1:nG
 %         deltaZ = InBounds(constraint_radius,temp(1,:),temp(2,:),temp(3,:), dz(1,:),dz(2,:),dz(3,:));
         %%%%%%%%%%%%%%%%%%%%%%%
         
-        dB0 = gradAmp(1,j)*r; 
+        dB0 = gradAmp(:,j).*r; 
         [mT,mZ] =  bloch(dt,dB0,rfPulse(j),T1,T2,mT,mZ); 
-
-        xCoords(i, j) = r(1);
-        yCoords(i, j) = r(2);
-        zCoords(i, j) = r(3);
-
+        
         % condition is true if it has reached the read point
         if (j > diffusionGradient2_loc(end))
             mFinalVect(i,:) = [mean(mT,'all'), mean(mZ,'all')];  
@@ -159,22 +144,14 @@ title('Absolute of Diffusion Attenuation');
 % title('Angle of Diffusion Attenuation')
 
 
-% subplot(2,1,2);
-% for spin = 1:nSpins
-%     plot3(r(1,spin),r(2,spin),r(3,spin),'x');
-%     hold on; 
-% end
-% xlabel('x'), ylabel('y'),zlabel('z');
-% title('Final location of particle')
-
-
 subplot(2,1,2);
 for spin = 1:nSpins
-    plot3(xCoords(spin,:),yCoords(spin,:),zCoords(spin,:),'Color', rand(1,3), 'MarkerSize', 9);
+    plot3(r(1,spin),r(2,spin),r(3,spin),'x');
     hold on; 
 end
 xlabel('x'), ylabel('y'),zlabel('z');
 title('Final location of particle')
+
 %% FUNCTIONS %%
 
 function result = InBounds(r,x1,y1,z1,dx,dy,dz)

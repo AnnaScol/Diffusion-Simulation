@@ -27,13 +27,13 @@ function [Sx,Sy,Sz,cutout_disks,cutout_idx] = CutOutSphere(MainSphereRadius,Cutt
 
     Sx = x; Sy = y; Sz = z;
     
-    for i = 1:length(CuttOutRadius)
-        x(cutout_idx(i,(find(cutout_idx(i,:)>1)))) = nan;
-        y(cutout_idx(i,(find(cutout_idx(i,:)>1)))) = nan;
-        z(cutout_idx(i,(find(cutout_idx(i,:)>1)))) = nan; 
-    end
-    figure;
-    mesh(x,y,z);
+%     for i = 1:length(CuttOutRadius)
+%         x(cutout_idx(i,(find(cutout_idx(i,:)>1)))) = nan;
+%         y(cutout_idx(i,(find(cutout_idx(i,:)>1)))) = nan;
+%         z(cutout_idx(i,(find(cutout_idx(i,:)>1)))) = nan; 
+%     end
+%     figure;
+%     mesh(x,y,z);
 
 end
 

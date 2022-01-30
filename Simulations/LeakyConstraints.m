@@ -22,7 +22,7 @@ ldelta = 0.030; %ms
 sdelta = 0.015; %ms
 D = 1.5e-12;    %m^2/s
 
-nSpins = 500;
+nSpins = 100;
 start_position = zeros(1,nSpins);
 G = ([0,5,10]*1e-3); %mT
 
@@ -46,8 +46,8 @@ x_center = 0; y_center = 0; z_center = 0;
 % Generate Sphere with hole
 N=100;  MainSphereOrigin = [x_center,y_center,z_center];
 MainSphereRadius = constraint_radius;
-CuttOutRadius = [0];
-CuttOutCenter = [0];
+CuttOutRadius = [5 7];
+CuttOutCenter = [10 -10];
 
 [sphere_X,sphere_Y,sphere_Z,cutout_disk,cutout_idx] = CutOutSphere(MainSphereRadius,CuttOutRadius,CuttOutCenter,N);
 
@@ -185,7 +185,9 @@ function result = InBounds(r,x1,y1,z1,dx,dy,dz,sphere_info)
             checker = 1;
         end
         
-        if ( (checker == 1) && (CheckCutOut(origin,x1(i),y1(i),z1(i),sphere_info) == 0) )
+        if (checker == 1) 
+            
+            if ( ~(CheckCutOut(origin,x1(i),y1(i),z1(i),sphere_info)) )
             
             %since it isn't within the bounds or going out of a hole we
             %move backwards
@@ -193,6 +195,7 @@ function result = InBounds(r,x1,y1,z1,dx,dy,dz,sphere_info)
             y1(i) = y1(i)-dy(i); 
             z1(i) = z1(i)-dz(i); 
 %             disp('beep');
+            end
         end
         
     end

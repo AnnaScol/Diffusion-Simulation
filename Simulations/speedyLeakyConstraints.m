@@ -24,9 +24,9 @@ D = 1.5e-12;    %m^2/s
 
 nSpins = 500;
 start_position = zeros(1,nSpins);
-G = ([0,5,10]*1e-3); %mT
+% G = ([0,5,10]*1e-3); %mT
 
-% G = ([0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,90,100,110]*1e-3); %mT
+G = ([0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,90,100,110]*1e-3); %mT
 
 nG = length(G);
 mFinalVect = zeros(nG,2); %variable to hold the final magnetization calculated for each position
@@ -46,8 +46,8 @@ x_center = 0; y_center = 0; z_center = 0;
 % Generate Sphere with hole
 N=100;  MainSphereOrigin = [x_center,y_center,z_center];
 MainSphereRadius = constraint_radius;
-CuttOutRadius = [0];
-CuttOutCenter = [0];
+CuttOutRadius = [5];
+CuttOutCenter = [30];
 
 [sphere_X,sphere_Y,sphere_Z,cutout_disk,cutout_idx] = CutOutSphere(MainSphereRadius,CuttOutRadius,CuttOutCenter,N);
 
@@ -175,28 +175,36 @@ title('Final location of particle')
 %% FUNCTIONS %%
 
 function result = InBounds(r,x1,y1,z1,dx,dy,dz,sphere_info)
-    checker = 0;
+    checker = zeros(1,length(x1));
     origin = [0 0 0];
     mag = sqrt((abs(x1)-origin(1)).^2 + (abs(y1)-origin(2)).^2 + (abs(z1)-origin(3)).^2);
+    outside_radius = (mag >= r);
+    check_x1 = outside_radius.*x1;
+    check_y1 = outside_radius.*y1;
+    check_z1 = outside_radius.*z1;
     
-    for i = 1:length(mag)
         
-        if ( mag(i) > r) %outside circle
-            checker = 1;
-        end
+   
+    if (sum(check_x1)+sum(check_y1)+sum(check_z1) ~= 0)
+        checker = CheckCutOut(origin,check_x1,check_y1,check_z1,sphere_info);
         
-        if ( (checker == 1) && (CheckCutOut(origin,x1(i),y1(i),z1(i),sphere_info) == 0) )
+            if ((sum(checker) == 0) && (length(checker) == 1) && ~size(sphere_info.cutout_idx,2))
+                
+                index = find(outside_radius>0);
+                x1(index) = x1(index)-dx(index); 
+                y1(index) = y1(index)-dy(index); 
+                z1(index) = z1(index)-dz(index); 
+            end
             
-            %since it isn't within the bounds or going out of a hole we
-            %move backwards
-            x1(i) = x1(i)-dx(i); 
-            y1(i) = y1(i)-dy(i); 
-            z1(i) = z1(i)-dz(i); 
-%             disp('beep');
-        end
-        
+            if (sum(checker)>0)
+                index = find(checker>0);
+                x1(index) = x1(index)-dx(index); 
+                y1(index) = y1(index)-dy(index); 
+                z1(index) = z1(index)-dz(index); 
+            end
+               
     end
-    
+
     result = [x1;y1;z1];
 end
 
@@ -209,21 +217,15 @@ function result = CheckCutOut(origin,x,y,z,sphere_info)
     sphere_Z = sphere_info.z;
     cutout_disk = sphere_info.cutouts;
     cutout_idx = sphere_info.cutout_idx;
-%just assume start at origin
-    result = 0;
+    result = zeros(1,length(x));
 
     %try testing each of the x,y,x and x,y,z sphere values in a loop
     for i = 1:size(cutout_idx,1)
-        
-% cutout_idx(i,(find(cutout_idx(i,:)>1)))
-        
         S_index = cutout_idx(i,find(cutout_idx(i,:)~=0));
         new_S_index = 1:length(find(squeeze(cutout_disk(i,:,:))==1));
-        
         sphere_X_val(i,new_S_index) = sphere_X(S_index);
         sphere_Y_val(i,new_S_index) = sphere_Y(S_index);
-        sphere_Z_val(i,new_S_index) = sphere_Z(S_index);
-        
+        sphere_Z_val(i,new_S_index) = sphere_Z(S_index); 
     end
     
     
@@ -235,55 +237,64 @@ function result = CheckCutOut(origin,x,y,z,sphere_info)
             Sy = sphere_Y_val(num_cutouts,i);
             Sz = sphere_Z_val(num_cutouts,i);
             
-            %check if it is meant to be negative or positive in the axis limits
-            if ( (Sx >= 0) && (Sy >= 0) && (Sz >= 0) )
-                
-                if ( (Sx <= x) && (Sy <= y) && (Sz <= z) )
-%                     fprintf("Logic %d, Sx = %.2f, Sy = %.2f, Sz = %.2f, x=%.2f y=%.2f z=%.2f\n",((Sx <= x) && (Sy <= y) && (Sz <= z) ),Sx,Sy,Sz,x,y,z)
-                    result = 1;
-                end
-                
-            elseif ( (Sx >= 0) && (Sy >= 0) && (Sz < 0) )
-                
-                if ( (Sx <= x) && (Sy <= y) && (Sz >= z) )
-                    result = 1;
-                end
-
-            elseif ( (Sx >= 0) && (Sy < 0) && (Sz >= 0) )
-                
-                if ( (Sx <= x) && (Sy >= y) && (Sz <= z) )
-                    result = 1;
-                end
-                
-            elseif ( (Sx < 0) && (Sy >= 0) && (Sz >= 0) )
-                
-                if ( (Sx >= x) && (Sy <= y) && (Sz <= z) )
-                    result = 1;
-                end      
-               
-            elseif ( (Sx >= 0) && (Sy < 0) && (Sz < 0) )
-                
-                if ( (Sx <= x) && (Sy >= y) && (Sz >= z) )
-                    result = 1;
-                end   
-                
-            elseif ( (Sx < 0) && (Sy < 0) && (Sz >= 0) )
-                
-                if ( (Sx  >= x) && (Sy >= y) && (Sz <= z) )
-                    result = 1;
-                end 
-                
-            elseif ( (Sx < 0) && (Sy >= 0) && (Sz < 0) )
-                
-                if ( (Sx  >= x) && (Sy <= y) && (Sz >= z) )
-                    result = 1;
-                end 
+            %maybe cascade the results downwards because it will only
+            %correct one spins 
             
-            elseif ( (Sx < 0) && (Sy < 0) && (Sz < 0) )
+            %check if it is meant to be negative or positive in the axis limits
+            if ( (Sx >= 0) && (Sy >= 0) && (Sz >= 0) )      
+                if ( sum((Sx <= x) & (Sy <= y) & (Sz <= z)) > 0)
+                    
+                    result = ((Sx <= x) & (Sy <= y) & (Sz <= z)) ;
+                end
                 
-                if ( (Sx >= x) && (Sy >= y) && (Sz >= z) )
-                    result = 1;
+            if ( (Sx >= 0) && (Sy >= 0) && (Sz < 0) )
+                if ( (Sx <= x) & (Sy <= y) & (Sz >= z) )
+                    
+                    result = (Sx <= x) & (Sy <= y) & (Sz >= z);
+                end
+            end
+
+            if ( (Sx >= 0) && (Sy < 0) && (Sz >= 0) )
+                if ( (Sx <= x) & (Sy >= y) & (Sz <= z) )
+                    
+                    result = (Sx <= x) & (Sy >= y) & (Sz <= z) ;
+                end
+            end
+                
+            if ( (Sx < 0) && (Sy >= 0) && (Sz >= 0) )
+                if ( (Sx >= x) & (Sy <= y) & (Sz <= z) )
+                    
+                    result = (Sx >= x) & (Sy <= y) & (Sz <= z) ;
+                end 
+            end
+               
+            if ( (Sx >= 0) && (Sy < 0) && (Sz < 0) )
+                if ( (Sx <= x) & (Sy >= y) & (Sz >= z) )
+                    
+                    result = (Sx <= x) & (Sy >= y) & (Sz >= z) ;
                 end  
+            end
+                
+            if ( (Sx < 0) && (Sy < 0) && (Sz >= 0) )
+                if ( (Sx  >= x) & (Sy >= y) & (Sz <= z) )
+                    
+                    result = (Sx  >= x) & (Sy >= y) & (Sz <= z) ;
+                end 
+            end
+                
+            if ( (Sx < 0) && (Sy >= 0) && (Sz < 0) )
+                if ( (Sx  >= x) & (Sy <= y) & (Sz >= z) )
+                    
+                    result = (Sx  >= x) & (Sy <= y) & (Sz >= z) ;
+                end 
+            end
+            
+            if ( (Sx < 0) && (Sy < 0) && (Sz < 0) )
+                if ( (Sx >= x) & (Sy >= y) & (Sz >= z) )
+                    
+                    result = (Sx >= x) & (Sy >= y) & (Sz >= z) ;
+                end  
+            end
                 
             end %end of if,elseif,..... statement
         end %end of all index checks

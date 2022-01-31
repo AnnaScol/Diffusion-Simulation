@@ -47,7 +47,7 @@ TE = 65*(10^-3);
 
 constraint_radius = 5.0e-5;
 % constraint_radius = 17.0e-6;
-% constraint_radius = ([2 4 6 8 10]*1e-6); 
+constraint_radii = ([2 4 6 8 10]*1e-6); 
 % %%   %% %
 for i=1:nTimeSteps %i starts at 1 go's to 15000
     time(i)    = i*dt;                       %Time in seconds
@@ -94,87 +94,92 @@ subplot(3,1,3); plot(time,gradAmp(3,:),'b-','LineWidth',2);title('Slice Select G
 xlabel('time (s)'), ylabel('G_{z}(T/m)');grid on;
 
 %% Get location matrix --> 3 x nSpins dimensions
-for i = 1:nG
-    j = 1;
 
-    %starting spin locations
-    r = zeros(3,nSpins);
-    xCoords(i, j) = r(1);
-    yCoords(i, j) = r(2);
-    zCoords(i, j) = r(3);
-        
-    for j = 2:nTimeSteps   
-        %%% Bounds checking %%%
-        rnd = (-1 + 2*rand(3,nSpins));
-        rnd = rnd(:,:)./sqrt(sum(rnd(:,:).*rnd(:,:)));
-        
-        dz = rnd*D;
-        temp_r = dz+r;
-        r = InBounds(constraint_radius,temp_r(1,:),temp_r(2,:),temp_r(3,:), dz(1,:),dz(2,:),dz(3,:));
-        xCoords(:, j) = r(1,:)';
-        yCoords(:, j) = r(2,:)';
-        zCoords(:, j) = r(3,:)';
+for radius_bounds = 1:length(constraint_radii)
+    for i = 1:nG
+        j = 1;
 
-        % condition is true if it has reached the read point
-        if (j > diffusionGradient2_loc(end))
-            break;
+        %starting spin locations
+        r = zeros(3,nSpins);
+        xCoords(i, j) = r(1);
+        yCoords(i, j) = r(2);
+        zCoords(i, j) = r(3);
+
+        for j = 2:nTimeSteps   
+            %%% Bounds checking %%%
+            rnd = (-1 + 2*rand(3,nSpins));
+            rnd = rnd(:,:)./sqrt(sum(rnd(:,:).*rnd(:,:)));
+
+            dz = rnd*D;
+            temp_r = dz+r;
+            r = InBounds(radius_bounds,temp_r(1,:),temp_r(2,:),temp_r(3,:), dz(1,:),dz(2,:),dz(3,:));
+            xCoords(:, j) = r(1,:)';
+            yCoords(:, j) = r(2,:)';
+            zCoords(:, j) = r(3,:)';
+
+            % condition is true if it has reached the read point
+            if (j > diffusionGradient2_loc(end))
+                break;
+            end
+
+        end
+    end
+
+    % figure
+    % for spin = 1:nSpins
+    %     plot3(xCoords(spin,:),yCoords(spin,:),zCoords(spin,:),'Color', rand(1,3), 'MarkerSize', 9);
+    %     hold on; 
+    % end
+    % xlabel('x'), ylabel('y'),zlabel('z');
+    % title('Final location of particle')
+    % 
+
+    %% Perform sequence
+
+    for i = 1:nG
+        j = 1;
+        gradAmp(3,diffusionGradient1_loc) =  G(i); %Z gradients in Tesla per meter
+        gradAmp(3,diffusionGradient2_loc) =  G(i); %Z gradients in Tesla per meter
+
+        mT = zeros(3,nSpins);
+        mZ = ones(3,nSpins);
+
+        %starting spin locations
+        [mT,mZ] =  bloch(dt,([xCoords(:,1),yCoords(:,1),zCoords(:,1)]'),0,T1,T2,mT,mZ); 
+
+        for j = 2:nTimeSteps
+
+            dB0 = gradAmp(:,j)'*([xCoords(:,j),yCoords(:,j),zCoords(:,j)]'); 
+            [mT,mZ] =  bloch(dt,dB0,rfPulse(j),T1,T2,mT,mZ); 
+
+            % condition is true if it has reached the read point
+            if (j > diffusionGradient2_loc(end))
+                mFinalVect(i,:) = [mean(mT,'all'), mean(mZ,'all')];  
+                break;
+            end
+
         end
 
-    end
-end
-
-
-
-%% Perform seuquence
-
-for i = 1:nG
-    j = 1;
-    gradAmp(3,diffusionGradient1_loc) =  G(i); %Z gradients in Tesla per meter
-    gradAmp(3,diffusionGradient2_loc) =  G(i); %Z gradients in Tesla per meter
-    
-    mT = zeros(3,nSpins);
-    mZ = ones(3,nSpins);
-    
-    %starting spin locations
-    [mT,mZ] =  bloch(dt,([xCoords(:,1),yCoords(:,1),zCoords(:,1)]'),0,T1,T2,mT,mZ); 
-        
-    for j = 2:nTimeSteps
-        
-        %%% Bounds checking %%%
-%         rnd = (-1 + 2*rand(3,nSpins));
-%         rnd = rnd(:,:)./sqrt(sum(rnd(:,:).*rnd(:,:)));
-%         
-% %         dz =  rnd.*sqrt(2*D*(ldelta-sdelta/3));
-% %         dz = rnd*D;
-% %         r = dz+r; %adding a random step to each spin in each timestep between diffusion grads
-
-%         dz = rnd*D;
-%         temp_r = dz+r;
-%         r = InBounds(constraint_radius,temp_r(1,:),temp_r(2,:),temp_r(3,:), dz(1,:),dz(2,:),dz(3,:));
-        %%%%%%%%%%%%%%%%%%%%%%%
-        
-        dB0 = gradAmp(:,j)'*([xCoords(:,j),yCoords(:,j),zCoords(:,j)]'); 
-        [mT,mZ] =  bloch(dt,dB0,rfPulse(j),T1,T2,mT,mZ); 
-
-        xCoords(:, j) = r(1,:)';
-        yCoords(:, j) = r(2,:)';
-        zCoords(:, j) = r(3,:)';
-
-        % condition is true if it has reached the read point
-        if (j > diffusionGradient2_loc(end))
-            mFinalVect(i,:) = [mean(mT,'all'), mean(mZ,'all')];  
-            break;
-        end
-
+        disp(['b-value = ' num2str(round(b(i)*1e-6))]);
     end
     
-    disp(['b-value = ' num2str(round(b(i)*1e-6))]);
+    figure(2);
+    log_vals = -log(abs(mFinalVect(:,1))./(b*1e-6)');
+    log_vals(1) = 1;
+    plot(b*1e-6,log_vals,'o-','LineWidth',2);
+    xlabel('b (s/mm^2)'), ylabel('ln(|M_{xy}|/b)');grid on;
+    title('Log Diffusion Attenuation');
+    drawnow
+    hold on;
+    
 end
+legend("radis %d","radis %d","radis %d","radis %d","radis %d",constraint_radii(1),constraint_radii(2),constraint_radii(3),constraint_radii(4),constraint_radii(5))
 %0.02
 %% PLOTTING %%
 % Make it log values --> -(1/b)*ln(S_{DWI}/S_{b}) (dont need th 1/b maybe)
 %make sure to scale both axis
 %
+
 figure;
 log_vals = -log(abs(mFinalVect(:,1))./(b*1e-6)');
 log_vals(1) = 1;
@@ -186,9 +191,9 @@ subplot(4,1,2);plot(b*1e-6,abs(mFinalVect(:,1)),'o-','LineWidth',2);
 xlabel('b (s/mm^2)'), ylabel('|M_{xy}|');grid on;
 title('Absolute of Diffusion Attenuation');
 
-subplot(4,1,3);plot(b*1e-6,angle(mFinalVect(:,1)),'o-','LineWidth',2);
-xlabel('b (s/mm^2)'), ylabel('\angleM_{xy} '); ylim([-pi pi]);grid on;
-title('Angle of Diffusion Attenuation')
+% subplot(4,1,3);plot(b*1e-6,angle(mFinalVect(:,1)),'o-','LineWidth',2);
+% xlabel('b (s/mm^2)'), ylabel('\angleM_{xy} '); ylim([-pi pi]);grid on;
+% title('Angle of Diffusion Attenuation')
 
 % 
 % subplot(4,1,4);

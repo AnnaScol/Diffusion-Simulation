@@ -12,6 +12,7 @@ function [ mtOut, mzOut  ] = bloch(dt,dB0,B1,T1,T2,mt,mz) %1sec
    %apply B0:
    mtOut = mtOut.*exp(1i*gamma*dt*dB0);
    
+   
 %    %apply relaxation: 
 %    mtOut = mtOut.*exp(-dt./T2);
 %    mzOut = mzOut.*exp(-dt./T1) + (1-exp(-dt./T1));

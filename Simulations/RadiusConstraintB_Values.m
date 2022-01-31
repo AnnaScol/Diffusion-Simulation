@@ -9,7 +9,7 @@ clear all; clc; close all; % clean up
 tmp = matlab.desktop.editor.getActive;  % get location of this script
 cd(fileparts(tmp.Filename));            % set working directory to same
 
-dt    = 5*10^-6; 
+dt    = 10*10^-6; 
 gamma = 2*pi*42.577*10^6;
 
 
@@ -28,7 +28,8 @@ sdelta = 0.020; %ms
 D = 1e-6;    %m^2/s
 
 nSpins = 1000;
-G = ([0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,100]*1e-3); %mT
+G = ([0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,100,120]*1e-3); %mT
+% G = ([10]*1e-3); %mT
 
 
 nG = length(G);
@@ -46,7 +47,9 @@ TE = 65*(10^-3);
 
 % constraint_radius = 5.0e-5;
 % constraint_radius = 17.0e-6;
-constraint_radii = ([1 5 10 25 50 80 1*1e6]*1e-6); 
+% constraint_radii = ([5]*1e-6); 
+
+constraint_radii = ([1 10 15 20 25 30 40 1*1e6]*1e-6); 
 % %%   %% %
 for i=1:nTimeSteps %i starts at 1 go's to 15000
     time(i)    = i*dt;                       %Time in seconds
@@ -61,7 +64,7 @@ rfPulse(rfStepsE) = apodize_sinc_rf(length(rfStepsE),3,pi/2,dt); %B1+ in Tesla
 
 % First diffusion gradient
 diffusionGradient1_loc = round((1:(sdelta/dt))+ pulsedurE/dt);
-gradAmp(3,diffusionGradient1_loc) =  G(3); %Z gradients in Tesla per meter
+gradAmp(3,diffusionGradient1_loc) =  G(1); %Z gradients in Tesla per meter
 
 %RF Refocusing pules
 pulsedurR = 0.002; % duration of the RF in s
@@ -71,7 +74,7 @@ rfPulse(round(TE/2/dt) +length(rfStepsE)/2 + rfStepsR) = rfPulseR;
 
 % diffusion pulse 2
 diffusionGradient2_loc = round((1:(sdelta/dt)) + pulsedurE/dt + pulsedurR/dt + ldelta/dt + sdelta/dt);
-gradAmp(3,diffusionGradient2_loc) =  G(3); %Z gradients in Tesla per meter
+gradAmp(3,diffusionGradient2_loc) =  G(1); %Z gradients in Tesla per meter
 
 location = zeros(3,nTimeSteps);
 
@@ -97,14 +100,13 @@ store_final_vect = zeros(length(b),length(constraint_radii));
 store_final_log_vect = zeros(length(b),length(constraint_radii));
 
 for radius_bounds = 1:length(constraint_radii)
-    for i = 1:nG
         j = 1;
 
         %starting spin locations
         r = zeros(3,nSpins);
-        xCoords(i, j) = r(1);
-        yCoords(i, j) = r(2);
-        zCoords(i, j) = r(3);
+        xCoords(:,j) = r(1,:)';
+        yCoords(:,j) = r(2,:)';
+        zCoords(:,j) = r(3,:)';
 
         for j = 2:nTimeSteps   
             %%% Bounds checking %%%
@@ -117,25 +119,17 @@ for radius_bounds = 1:length(constraint_radii)
             xCoords(:, j) = r(1,:)';
             yCoords(:, j) = r(2,:)';
             zCoords(:, j) = r(3,:)';
-
+            
             % condition is true if it has reached the read point
             if (j > diffusionGradient2_loc(end))
                 break;
             end
 
         end
-    end
-
-%     figure(10)
-%     for spin = 1:nSpins
-%         plot3(xCoords(spin,:),yCoords(spin,:),zCoords(spin,:),'Color', rand(1,3), 'MarkerSize', 9);
-%         hold on; 
-%     end
-%     xlabel('x'), ylabel('y'),zlabel('z');
-%     title('Final location of particle')
-%     drawnow;
-
     
+    
+    fig_num = 10;
+    DrawParticleGraph(xCoords,yCoords,zCoords,nSpins,fig_num)
 
     %% Perform sequence
     disp("Starting sequence");
@@ -189,7 +183,7 @@ for radius_bounds = 1:length(constraint_radii)
 
     
 end
-legend("1*1e-6","5*1e-6","10*1e-6","25*1e-6","50*1e-6", "80*1e-6", "Free Space")
+legend("1*1e-6","10*1e-6","15*1e-6","20*1e-6","25*1e-6", "30*1e-6", "40*1e-6", "Free Space")
 
 %% FUNCTIONS %%
 
@@ -197,7 +191,7 @@ function result = InBounds(r,x1,y1,z1,dx,dy,dz)
     %result is dim = 3 x nSpins
     
     origin = [0 0 0];
-%     result = [x1;y1;z1];
+    result = [x1;y1;z1];
 
     mag = sqrt((abs(x1)-origin(1)).^2 + (abs(y1)-origin(2)).^2 + (abs(z1)-origin(3)).^2);
     test_axis_x = sqrt((abs(x1)-origin(1)).^2 + (abs(y1-dy)-origin(2)).^2 + (abs(z1-dz)-origin(3)).^2);
@@ -208,20 +202,72 @@ function result = InBounds(r,x1,y1,z1,dx,dy,dz)
     temp = max(test_res);
     temp = max(temp);
     
+    
+    
     if (temp == 1)
         
-        if (find(test_res(1,:)>0))
-            x1(find(test_res(1,:)>0)) = x1(find(test_res(1,:)>0)) - dx(find(test_res(1,:)>0));
-        end
-        
-        if (find(test_res(2,:)>0))
-            y1(find(test_res(2,:)>0)) = y1(find(test_res(2,:)>0)) - dy(find(test_res(2,:)>0));
-        end
-        
-        if (find(test_res(3,:)>0))
-            z1(find(test_res(3,:)>0)) = z1(find(test_res(3,:)>0)) - dz(find(test_res(3,:)>0));
-        end
+        need_to_mirror = sum(test_res);
+        index_list = find(need_to_mirror>0);
+    
+        mirrored = mirror_trajectory([(x1-dx);(y1-dy);(z1-dz)], [dx;dy;dz],index_list);
+        result = mirrored;
     end
+end
+
+function result = mirror_trajectory(previous_xyz,current_dxdydz, index_list)
+    
+    x0 = previous_xyz(1,:);
+    y0 = previous_xyz(2,:);
+    z0 = previous_xyz(3,:);
+    
+    x1 = x0 + current_dxdydz(1,:);
+    y1 = y0 + current_dxdydz(2,:);
+    z1 = z0 + current_dxdydz(3,:);
     
     result = [x1;y1;z1];
+    
+    vertex_x0y0z0 = [x0',y0',z0']; 
+    vertex_x1y1z1 = [x1',y1',z1'];
+    
+%     figure;
+    for i =1:length(index_list)
+        
+        V = [vertex_x0y0z0(index_list(i),:);...
+             vertex_x1y1z1(index_list(i),:)];
+         
+%         plot3(V(:,1),V(:,2),V(:,3),'k.-','MarkerSize',25,'Color', rand(1,3)); 
+%         xlabel('x'), ylabel('y'),zlabel('z');
+%         hold on
+        
+        A = vertex_x0y0z0(index_list(i),:);
+        B = vertex_x1y1z1(index_list(i),:);
+        x = [V(1,1);V(2,1)];
+        y = [V(1,2);V(2,2)];
+        z = [V(1,3);V(2,3)];
+        
+        normal = ([mean(x),mean(y),mean(z)] + null(A-B)');
+        normal = (normal(:,:)./sqrt(sum(normal(:,:).*normal(:,:))))*1e-6;%
+        
+        
+%         plot3([B(1),normal(1)],[B(2),normal(2)],[B(3),normal(3)],'r.-','LineWidth',1)
+%         legend("Original","Rotated")
+
+        x1(index_list(i)) = normal(1);
+        y1(index_list(i)) = normal(2);
+        z1(index_list(i)) = normal(3);
+        result = [x1;y1;z1];
+    end
+
+end
+
+%Draws the plot for the particles trajetories 
+function DrawParticleGraph(xCoords,yCoords,zCoords,nSpins,fig_num)
+    figure(fig_num)
+    for spin = 1:nSpins
+        plot3(xCoords(spin,:),yCoords(spin,:),zCoords(spin,:),'Color', rand(1,3), 'MarkerSize', 9);
+        hold on; 
+    end
+    xlabel('x'), ylabel('y'),zlabel('z');
+    title('Final location of particle')
+    drawnow;
 end

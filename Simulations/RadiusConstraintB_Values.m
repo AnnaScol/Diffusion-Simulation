@@ -9,7 +9,7 @@ clear all; clc; close all; % clean up
 tmp = matlab.desktop.editor.getActive;  % get location of this script
 cd(fileparts(tmp.Filename));            % set working directory to same
 
-dt    = 50^-6; 
+dt    = 5*10^-6; 
 gamma = 2*pi*42.577*10^6;
 
 
@@ -93,6 +93,8 @@ subplot(3,1,3); plot(time,gradAmp(3,:),'b-','LineWidth',2);title('Slice Select G
 xlabel('time (s)'), ylabel('G_{z}(T/m)');grid on;
 
 %% Get location matrix --> 3 x nSpins dimensions
+store_final_vect = zeros(length(b),length(constraint_radii));
+store_final_log_vect = zeros(length(b),length(constraint_radii));
 
 for radius_bounds = 1:length(constraint_radii)
     for i = 1:nG
@@ -167,48 +169,27 @@ for radius_bounds = 1:length(constraint_radii)
     end
     
     figure(2);
+    subplot(2,1,1);
     log_vals = -log(abs(mFinalVect(:,1))./(b*1e-6)');
     log_vals(1) = 1;
     plot(b*1e-6,log_vals,'o-','LineWidth',2);
     xlabel('b (s/mm^2)'), ylabel('ln(|M_{xy}|/b)');grid on;
     title('Log Diffusion Attenuation');
+    hold on;
+    
+    subplot(2,1,2);
+    plot(b*1e-6,abs(mFinalVect(:,1)),'o-','LineWidth',2);
+    xlabel('b (s/mm^2)'), ylabel('|M_{xy}|');grid on;
+    title('Absolute of Diffusion Attenuation');
     drawnow
     hold on;
     
+    store_final_vect(:,radius_bounds) = abs(mFinalVect(:,1));
+    store_final_log_vect(:,radius_bounds) = -log(abs(mFinalVect(:,1))./(b*1e-6)');
+
+    
 end
 legend("1*1e-6","5*1e-6","10*1e-6","25*1e-6","50*1e-6", "80*1e-6", "Free Space")
-
-%% PLOTTING %%
-% Make it log values --> -(1/b)*ln(S_{DWI}/S_{b}) (dont need th 1/b maybe)
-%make sure to scale both axis
-%
-
-figure;
-log_vals = -log(abs(mFinalVect(:,1))./(b*1e-6)');
-log_vals(1) = 1;
-subplot(4,1,1);plot(b*1e-6,log_vals,'o-','LineWidth',2);
-xlabel('b (s/mm^2)'), ylabel('ln(|M_{xy}|/b)');grid on;
-title('Log Diffusion Attenuation');
-
-subplot(4,1,2);plot(b*1e-6,abs(mFinalVect(:,1)),'o-','LineWidth',2);
-xlabel('b (s/mm^2)'), ylabel('|M_{xy}|');grid on;
-title('Absolute of Diffusion Attenuation');
-
-% subplot(4,1,3);plot(b*1e-6,angle(mFinalVect(:,1)),'o-','LineWidth',2);
-% xlabel('b (s/mm^2)'), ylabel('\angleM_{xy} '); ylim([-pi pi]);grid on;
-% title('Angle of Diffusion Attenuation')
-
-% 
-% subplot(4,1,4);
-figure
-for spin = 1:nSpins
-    plot3(xCoords(spin,:),yCoords(spin,:),zCoords(spin,:),'Color', rand(1,3), 'MarkerSize', 9);
-    hold on; 
-end
-xlabel('x'), ylabel('y'),zlabel('z');
-title('Final location of particle')
-
-
 
 %% FUNCTIONS %%
 

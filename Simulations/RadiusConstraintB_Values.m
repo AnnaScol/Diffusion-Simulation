@@ -9,7 +9,7 @@ clear all; clc; close all; % clean up
 tmp = matlab.desktop.editor.getActive;  % get location of this script
 cd(fileparts(tmp.Filename));            % set working directory to same
 
-dt    = 10^-6; 
+dt    = 50^-6; 
 gamma = 2*pi*42.577*10^6;
 
 
@@ -46,7 +46,7 @@ TE = 65*(10^-3);
 
 % constraint_radius = 5.0e-5;
 % constraint_radius = 17.0e-6;
-constraint_radii = ([1 5 10 25 50]*1e-6); 
+constraint_radii = ([1 5 10 25 50 80 1*1e6]*1e-6); 
 % %%   %% %
 for i=1:nTimeSteps %i starts at 1 go's to 15000
     time(i)    = i*dt;                       %Time in seconds
@@ -124,20 +124,22 @@ for radius_bounds = 1:length(constraint_radii)
         end
     end
 
-    figure(10)
-    for spin = 1:nSpins
-        plot3(xCoords(spin,:),yCoords(spin,:),zCoords(spin,:),'Color', rand(1,3), 'MarkerSize', 9);
-        hold on; 
-    end
-    xlabel('x'), ylabel('y'),zlabel('z');
-    title('Final location of particle')
-    drawnow;
+%     figure(10)
+%     for spin = 1:nSpins
+%         plot3(xCoords(spin,:),yCoords(spin,:),zCoords(spin,:),'Color', rand(1,3), 'MarkerSize', 9);
+%         hold on; 
+%     end
+%     xlabel('x'), ylabel('y'),zlabel('z');
+%     title('Final location of particle')
+%     drawnow;
 
     
 
     %% Perform sequence
-
+    disp("Starting sequence");
+    
     for i = 1:nG
+
         j = 1;
         gradAmp(3,diffusionGradient1_loc) =  G(i); %Z gradients in Tesla per meter
         gradAmp(3,diffusionGradient2_loc) =  G(i); %Z gradients in Tesla per meter
@@ -174,8 +176,8 @@ for radius_bounds = 1:length(constraint_radii)
     hold on;
     
 end
-legend("1*1e-6","5*1e-6","10*1e-6","25*1e-6","50*1e-6")
-%0.02
+legend("1*1e-6","5*1e-6","10*1e-6","25*1e-6","50*1e-6", "80*1e-6", "Free Space")
+
 %% PLOTTING %%
 % Make it log values --> -(1/b)*ln(S_{DWI}/S_{b}) (dont need th 1/b maybe)
 %make sure to scale both axis

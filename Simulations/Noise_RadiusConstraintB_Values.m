@@ -89,7 +89,6 @@ Coords = zeros(length(constraint_radii),3,nSpins,nTimeSteps); %particle start lo
 SetsOfSpins=20;
 store_final_vect = zeros(SetsOfSpins,length(b),length(constraint_radii));
 
-%%
 for set = 1:20 %20 sets of 500
     
     for radius_bounds = 1:length(constraint_radii)
@@ -165,7 +164,7 @@ for SpinSet = 1:20
 
             for j = 2:nTimeSteps
 
-                NOISE = 0;
+                NOISE = normrnd(-1,1,[3,nSpins])*D;
                 dB0 = gradAmp(:,j)'*([squeeze(Coords(radius_bounds,1,:,j)),...
                         squeeze(Coords(radius_bounds,2,:,j)),squeeze(Coords(radius_bounds,3,:,j))]') ...
                         + NOISE ; 
@@ -315,51 +314,3 @@ function DrawParticleGraph(xCoords,yCoords,zCoords,nSpins,fig_num)
     drawnow;
 end
 
-
-
-
-function result = vector_mirror_trajectory(previous_xyz,current_dxdydz, index_list)
-    
-    x0 = previous_xyz(1,:);
-    y0 = previous_xyz(2,:);
-    z0 = previous_xyz(3,:);
-    
-    x1 = x0 + current_dxdydz(1,:);
-    y1 = y0 + current_dxdydz(2,:);
-    z1 = z0 + current_dxdydz(3,:);
-    
-    result = [x1;y1;z1];
-    
-    vertex_x0y0z0 = [x0',y0',z0']; 
-    vertex_x1y1z1 = [x1',y1',z1'];
-    
-%     figure;
-    for i =1:length(index_list)
-        
-        V = [vertex_x0y0z0(index_list(i),:);...
-             vertex_x1y1z1(index_list(i),:)];
-         
-%         plot3(V(:,1),V(:,2),V(:,3),'k.-','MarkerSize',25,'Color', rand(1,3)); 
-%         xlabel('x'), ylabel('y'),zlabel('z');
-%         hold on
-        
-        A = vertex_x0y0z0(index_list(i),:);
-        B = vertex_x1y1z1(index_list(i),:);
-        x = [V(1,1);V(2,1)];
-        y = [V(1,2);V(2,2)];
-        z = [V(1,3);V(2,3)];
-        
-        normal = ([mean(x),mean(y),mean(z)] + null(A-B)');
-        normal = (normal(:,:)./sqrt(sum(normal(:,:).*normal(:,:))))*1e-6;%
-        
-        
-%         plot3([B(1),normal(1)],[B(2),normal(2)],[B(3),normal(3)],'r.-','LineWidth',1)
-%         legend("Original","Rotated")
-
-        x1(index_list(i)) = normal(1);
-        y1(index_list(i)) = normal(2);
-        z1(index_list(i)) = normal(3);
-        result = [x1;y1;z1];
-    end
-
-end

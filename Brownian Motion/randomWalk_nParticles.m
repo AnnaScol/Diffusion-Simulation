@@ -8,6 +8,8 @@ movements_per_sec = 1;
 numberOfSteps = (STOP_TIME-START_TIME)*movements_per_sec;
 
 % vectors for random steps
+
+
 rand_x_steps = (randn((STOP_TIME-START_TIME)*movements_per_sec,num_particle));
 rand_y_steps = (randn((STOP_TIME-START_TIME)*movements_per_sec,num_particle));
 

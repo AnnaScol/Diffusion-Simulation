@@ -12,7 +12,7 @@ gamma = 2*pi*42.577*10^6;
 
 
 %Allocate the memory needed
-nTimeSteps  = 7000*2*10^-5/dt;%70ms
+nTimeSteps  = 7000*10^-5/dt;%70ms
 rfPulse     = zeros(1,nTimeSteps); %variable to hold a RF waveform
 gradAmp     = zeros(3,nTimeSteps); %variable to hold a gradient waveform
 adc         = zeros(1,nTimeSteps); %variable to hold a gradient waveform
@@ -23,10 +23,10 @@ time        = zeros(1,nTimeSteps); %variable to hold the time points
 % Diffusion Gradients
 ldelta = 0.040; %ms
 sdelta = 0.020; %ms
-D = 1e-6;    %m^2/s
+D = 1e-8;    %cm^2/s
 
 nSpins = 500;
-G = ([0,5,7.5,10,12.5,15,17.5,20,22,25,30,35,40,45,50,55,60,65,70,75,80,100,125,150,175,200,300]*1e-3); %mT
+G = ([0,5,7.5,10,12.5,15,17.5,20,22,25,30,35,40,45,50,55,60,65,70,75,80,100,125,150]*1e-3); %mT
 
 
 nG = length(G);
@@ -34,12 +34,13 @@ mFinalVect = zeros(nG,2); %variable to hold the final magnetization calculated f
 
 b = gamma^2*G.^2*sdelta^2*(ldelta-sdelta/3);
 
+
 T1 = 1000*(10^-3);
 T2 = 1000*(10^-3); 
 TE = 65*(10^-3);
 
 % Make size soma cell and brain cell sizes - vary 0.005-0.1mm
-constraint_radii = ([1 5 10 15 20 25 35 1*1e6]*1e-6); 
+constraint_radii = ([1 2.5 5 7.5 10 12.5 15 20 1.0e6]*1e-6); 
 % %%   %% %
 for i=1:nTimeSteps %i starts at 1 go's to 15000
     time(i)    = i*dt;                       %Time in seconds
@@ -54,7 +55,7 @@ rfPulse(rfStepsE) = apodize_sinc_rf(length(rfStepsE),3,pi/2,dt); %B1+ in Tesla
 
 % First diffusion gradient
 diffusionGradient1_loc = round((1:(sdelta/dt))+ pulsedurE/dt);
-gradAmp(3,diffusionGradient1_loc) =  G(1); %Z gradients in Tesla per meter
+gradAmp(3,diffusionGradient1_loc) =  G(3); %Z gradients in Tesla per meter
 
 %RF Refocusing pules
 pulsedurR = 0.002; % duration of the RF in s
@@ -63,8 +64,8 @@ rfPulseR = apodize_sinc_rf(length(rfStepsR),3,pi,dt); %B1+ in Tesla
 rfPulse(round(TE/2/dt) +length(rfStepsE)/2 + rfStepsR) = rfPulseR;
 
 % diffusion pulse 2
-diffusionGradient2_loc = round((1:(sdelta/dt)) + pulsedurE/dt + pulsedurR/dt + ldelta/dt + sdelta/dt);
-gradAmp(3,diffusionGradient2_loc) =  G(1); %Z gradients in Tesla per meter
+diffusionGradient2_loc = round((1:(sdelta/dt)) + pulsedurE/dt + pulsedurR/dt + ldelta/dt);
+gradAmp(3,diffusionGradient2_loc) =  G(3); %Z gradients in Tesla per meter
 
 location = zeros(3,nTimeSteps);
 
@@ -75,25 +76,26 @@ Coords = zeros(length(constraint_radii),3,nSpins,nTimeSteps); %particle start lo
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % %% PLOTTING %% %
-% figure
-% subplot(3,1,1); plot(time,rfPulse,'k-','LineWidth',2);title('RF Pulse'); 
-% xlabel('time (s)'), ylabel('|B_{1}^{+}| (T)');grid on;
+figure
+subplot(3,1,1); plot(time,rfPulse,'k-','LineWidth',2);title('RF Pulse'); 
+xlabel('time (s)'), ylabel('|B_{1}^{+}| (T)');grid on;
 % 
 % subplot(3,1,2); plot(time,phase(rfPulse),'k-','LineWidth',2);title('RF Pulse Phase'); 
 % xlabel('time (s)'), ylabel('|B_{1}^{+}| (T)');grid on;
-% 
-% subplot(3,1,3); plot(time,gradAmp(3,:),'b-','LineWidth',2);title('Slice Select Gradient');
-% xlabel('time (s)'), ylabel('G_{z}(T/m)');grid on;
+
+subplot(3,1,3); plot(time,gradAmp(3,:),'b-','LineWidth',2);title('Slice Select Gradient');
+xlabel('time (s)'), ylabel('G_{z}(T/m)');grid on;
 
 % %% Get location matrix --> 3 x nSpins dimensions
 SetsOfSpins=20;
 store_final_vect = zeros(SetsOfSpins,length(b),length(constraint_radii));
 
-for set = 1:20 %20 sets of 500
+%%
+for set = 1:20 %20 sets of 500 for 10000 spins
     
     for radius_bounds = 1:length(constraint_radii)
             j = 1;
-            fprintf("RADIUS %d",radius_bounds);
+            fprintf("RADIUS %d ----- SET %d  \n",radius_bounds, set);
             %starting spin locations
             r = zeros(3,nSpins);
             Coords(radius_bounds,1,:,j) = r(1,:)';
@@ -127,21 +129,15 @@ for set = 1:20 %20 sets of 500
     %     end
 
     end
-save(sprintf('3D_Coords/Coords%d.mat',set),'Coords');
+    
+    save(sprintf('3D_Coords/Coords%d.mat',set),'Coords');
 end
-% save('xCoords20.mat','xCoords')
-% save('yCoords20.mat','yCoords')
-% save('zCoords20.mat','zCoords')
-
 
 %% Perform sequence 20 times and continually add values
 
 for SpinSet = 1:20
     
-    fprintf("Set %d/20\n",SpinSet);
-%     load(sprintf("Coords/xCoords%d.mat",SpinSet));
-%     load(sprintf("Coords/yCoords%d.mat",SpinSet));
-%     load(sprintf("Coords/zCoords%d.mat",SpinSet));
+    fprintf("\n\n Set %d/20 \n\n",SpinSet);
     load(sprintf("3D_Coords/Coords%d.mat",SpinSet));
 
     
@@ -164,10 +160,8 @@ for SpinSet = 1:20
 
             for j = 2:nTimeSteps
 
-                NOISE = normrnd(-1,1,[3,nSpins])*D;
                 dB0 = gradAmp(:,j)'*([squeeze(Coords(radius_bounds,1,:,j)),...
-                        squeeze(Coords(radius_bounds,2,:,j)),squeeze(Coords(radius_bounds,3,:,j))]') ...
-                        + NOISE ; 
+                        squeeze(Coords(radius_bounds,2,:,j)),squeeze(Coords(radius_bounds,3,:,j))]'); 
 
                 [mT,mZ] =  bloch(dt,dB0,rfPulse(j),T1,T2,mT,mZ); 
 
@@ -187,13 +181,11 @@ for SpinSet = 1:20
     end
         
 end
-% legend("1*1e-6","10*1e-6","15*1e-6","20*1e-6","25*1e-6", "30*1e-6", "40*1e-6", "Free Space")
-save('Large_final_vect.mat','store_final_vect')
 
 
-
+%%
+save('6_Large_final_vect.mat','store_final_vect')
 %% Sum all results 
-% save('Large_final_vect.mat','store_final_vect')
 final_res = squeeze(sum((store_final_vect),1)./SetsOfSpins);
 %%
 
@@ -218,9 +210,9 @@ for i = 1:length(constraint_radii)
 end
 figure(2);
 subplot(2,1,1);
-legend("1*1e-6","5*1e-6","10*1e-6","15*1e-6","20*1e-6","25*1e-6", "35*1e-6", "Free Space")
+legend("1*1e-6","5*1e-6","10*1e-6","15*1e-6","20*1e-6","Free Space")
 subplot(2,1,2);
-legend("1*1e-6","5*1e-6","10*1e-6","15*1e-6","20*1e-6","25*1e-6", "35*1e-6", "Free Space")
+legend("1*1e-6","5*1e-6","10*1e-6","15*1e-6","20*1e-6","Free Space")
 
 
 %% FUNCTIONS %%
@@ -313,4 +305,3 @@ function DrawParticleGraph(xCoords,yCoords,zCoords,nSpins,fig_num)
     title('Final location of particle')
     drawnow;
 end
-

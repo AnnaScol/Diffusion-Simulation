@@ -79,9 +79,6 @@ end
 line(xlim, [0,0], 'Color', 'k', 'LineWidth', 1);
 line([0,0], ylim, 'Color', 'k', 'LineWidth', 1);
 
-viscircles([x_center, y_center],radius,'Color','k','LineWidth',2);
-hold off
-
 
 
 %% Finding average distances from origin 

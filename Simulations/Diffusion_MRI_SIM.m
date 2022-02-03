@@ -43,7 +43,7 @@ TE = 65*(10^-3);
 % Make size soma cell and brain cell sizes - vary 0.005-0.1mm
 % constraint_radii = ([1 2.5 5 7.5 10 12.5 15 20 1.0e6]*1e-6); 
 % constraint_radii = ([1 50 150 250 300 1.0e6]*1e-6); 
-constraint_radii = ([5 10 20 150 300 100000000]*1e-6); 
+constraint_radii = ([2 5 10 20 150 300 100000000]*1e-6); 
 
 % %%   %% %
 for i=1:nTimeSteps %i starts at 1 go's to 15000
@@ -112,6 +112,7 @@ for set = 1:nSet %20 sets of 500 for 10000 spins
                 %normalizing
                 
                 rnd = (randn(3,nSpins)-0.5)*sqrt(2*3*D*dt);
+                
                 
                 
                 

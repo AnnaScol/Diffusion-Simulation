@@ -3,14 +3,14 @@ clear all; clc; close all; % clean up
 
 num_particle      = 1000; 
 START_TIME        = 0; %sec
-STOP_TIME         = 0.50; %sec
-movements_per_sec = 100;
+STOP_TIME         = 1; %sec
+movements_per_sec = 10000;
 dt = (STOP_TIME-START_TIME)/movements_per_sec;
 t = movements_per_sec*dt;
 numberOfSteps = (STOP_TIME-START_TIME)*movements_per_sec;
 
-radii = ((1:20)*1e-6);
-% radii = ([100000000]*1e-6);
+% radii = ((50)*1e-6);
+radii = (linspace(0.001,1,100)*1e-6);
 
 MSD = zeros(1,length(radii));
 D_vec = zeros(1,length(radii));
@@ -26,13 +26,25 @@ time = (1:size(xCoords,1))*dt;
 nTests = 100;
 resultStorage_x = zeros(nTests,(STOP_TIME-START_TIME)*movements_per_sec,num_particle);
 resultStorage_y = zeros(nTests,(STOP_TIME-START_TIME)*movements_per_sec,num_particle);
-
+%0.0320
 for radius = 1:length(radii)
     fprintf("RADIUS %d/%d\n",radius,length(radii));
 
-        rand_x_steps = (0.072.*randn((STOP_TIME-START_TIME)*movements_per_sec,num_particle))*sqrt(2*n*D*dt);
-        rand_y_steps = (0.072.*randn((STOP_TIME-START_TIME)*movements_per_sec,num_particle))*sqrt(2*n*D*dt);
-
+    
+        rand_x_steps = ((0.0059/1).*randn((STOP_TIME-START_TIME)*movements_per_sec,num_particle))*sqrt(2*n*D*dt);
+        rand_y_steps = ((0.0059/1).*randn((STOP_TIME-START_TIME)*movements_per_sec,num_particle))*sqrt(2*n*D*dt);
+        
+        test_x = rand_x_steps(1,:);
+        test_y = rand_y_steps(1,:);
+        
+%         XY = CheckCircleBounds(radii(radius),test_x,test_y,rand_x_steps(1,idx),rand_y_steps(1,idx));
+%         xCoords(step, idx) =  XY(1,:);
+%         yCoords(step, idx) =  XY(2,:);
+        
+%         rand_x_steps = ((0.0323/2).*randn((STOP_TIME-START_TIME)*movements_per_sec,num_particle))*sqrt(2*n*D*dt);
+%         rand_y_steps = ((0.0323/2).*randn((STOP_TIME-START_TIME)*movements_per_sec,num_particle))*sqrt(2*n*D*dt);
+%         
+                
         for step = 2:numberOfSteps
             for idx = 1:num_particle
 
@@ -100,6 +112,7 @@ xlabel('Radius Size (m)');ylabel('D(m^{2}/s)')
 line([0,radii(end)], [D, D], 'Color', 'k', 'LineWidth', 1);
 title("Diffusivity varying over Radii Constraints");
 legend('D-Measurements', 'Free water D = 3e-9');
+saveas(gcf,'1000Spin_10000ts_100p.fig')
 
 %%
 %check if value is within circle

@@ -21,10 +21,13 @@ time        = zeros(1,nTimeSteps); %variable to hold the time points
 % %% Parameters %% %
 
 % Diffusion Gradients
-ldelta = 0.1; %ms 0.04
-sdelta = 0.015; %ms 0.02
+ldelta = 0.04; %ms 0.04
+sdelta = 0.02; %ms 0.02
 % D = 6e-10;    % (1.0e-6)cm^2/s --> (1.0e-10)m^2/s
-D = 1e-10; %m^2/ms
+D = 3e-9; %m^2/ms
+n = 3;
+diffusion_dt = (ldelta-sdelta)/dt;
+t = (1/dt)*diffusion_dt;
 
 nSpins = 500;
 % G = ([0,5,7.5,10,12.5,15,17.5,20,22,25,30,35,40,45,50,55,60,65,70,75,80,100,125,150]*1e-3); %mT
@@ -43,7 +46,7 @@ TE = 65*(10^-3);
 % Make size soma cell and brain cell sizes - vary 0.005-0.1mm
 % constraint_radii = ([1 2.5 5 7.5 10 12.5 15 20 1.0e6]*1e-6); 
 % constraint_radii = ([1 50 150 250 300 1.0e6]*1e-6); 
-constraint_radii = ([2 5 10 20 150 300 100000000]*1e-6); 
+constraint_radii = ([0.5 1 1.5 2 2.5 3 4 5 100000000]*1e-6); 
 
 % %%   %% %
 for i=1:nTimeSteps %i starts at 1 go's to 15000
@@ -101,6 +104,7 @@ for set = 1:nSet %20 sets of 500 for 10000 spins
             j = 1;
             fprintf("RADIUS %d ----- SET %d  \n",radius_bounds, set);
             %starting spin locations
+            
             r = zeros(3,nSpins);
             Coords(radius_bounds,1,:,j) = r(1,:)';
             Coords(radius_bounds,2,:,j) = r(2,:)';
@@ -110,14 +114,12 @@ for set = 1:nSet %20 sets of 500 for 10000 spins
                 %%% Bounds checking %%%
                 
                 %normalizing
-                
+                rand_x_steps = (0.0318.*randn((STOP_TIME-START_TIME)*movements_per_sec,num_particle))*sqrt(2*n*D*dt);
+                rand_y_steps = (0.0318.*randn((STOP_TIME-START_TIME)*movements_per_sec,num_particle))*sqrt(2*n*D*dt);
+                rand_z_steps = (0.0318.*randn((STOP_TIME-START_TIME)*movements_per_sec,num_particle))*sqrt(2*n*D*dt);
+
                 rnd = (randn(3,nSpins)-0.5)*sqrt(2*3*D*dt);
                 
-                
-                
-                
-%                 rnd = (-1 + 2*rand(3,nSpins));
-%                 rnd = rnd(:,:)./sqrt(sum(rnd(:,:).*rnd(:,:)));
 
                 dz = rnd;
                 temp_r = dz+r;
@@ -144,6 +146,35 @@ for set = 1:nSet %20 sets of 500 for 10000 spins
     
     save(sprintf('3D_Coords/Coords%d.mat',set),'Coords');
 end
+
+%% Check D values from Coords
+
+for radius_bounds = 1:length(constraint_radii)
+    
+    load(sprintf("3D_Coords/Coords%d.mat",SpinSet));
+    distancesFromOrigin_x = squeeze(Coords(radius_bounds,1,end,:));
+    distancesFromOrigin_y = squeeze(Coords(radius_bounds,2,end,:));
+    distancesFromOrigin_z = squeeze(Coords(radius_bounds,3,end,:));
+
+
+    %magnitude from starting point as they dont start in the origin
+    magnitudeFromOrigin = sqrt((abs(distancesFromOrigin_x - squeeze(Coords(radius_bounds,1,1,:)))).^2 ...
+                             + (abs(distancesFromOrigin_y - squeeze(Coords(radius_bounds,2,1,:)))).^2 ...
+                             + (abs(distancesFromOrigin_z - squeeze(Coords(radius_bounds,3,1,:)))).^2);
+
+    MSD(1,radius) = mean(abs(magnitudeFromOrigin).^2);
+    D_vec(1,radius) = (MSD(radius)/(2*n*dt))*(1/t);
+
+    fprintf("MSD %d  ---- D %d\n",MSD(1,radius),D_vec(1,radius));
+end
+
+figure
+plot(radii,D_vec,'.-');
+hold on;
+xlabel('Radius Size (m)');ylabel('D(m^{2}/s)')
+line([0,radii(end)], [D, D], 'Color', 'k', 'LineWidth', 1);
+title("Diffusivity varying over Radii Constraints for 500spins");
+legend('D-Measurements', 'Free water D = 3e-9');
 
 %% Perform sequence 20 times and continually add values
 

@@ -1,16 +1,16 @@
-%% Simulate Random Walk for n Particle that Starts at Origin in 2D
+%% Simulate Random Walk for n Particle that Starts Randomly in 3D Sphere
 clear all; clc; close all; % clean up
 
 num_particle      = 1000; 
 START_TIME        = 0; %sec
-STOP_TIME         = 0.5; %sec
-movements_per_sec = 2000;
+STOP_TIME         = 0.1; %sec
+movements_per_sec = 100000;
 dt = (STOP_TIME-START_TIME)/movements_per_sec;
 t = movements_per_sec*dt;
 numberOfSteps = (STOP_TIME-START_TIME)*movements_per_sec;
 
-% radii = (5*1e-6);
-radii = (linspace(1,15,30)*1e-6);
+radii = (7*1e-6);
+% radii = (linspace(1,15,30)*1e-6);
 
 MSD = zeros(1,length(radii));
 D_vec = zeros(1,length(radii));
@@ -18,19 +18,29 @@ D_vec = zeros(1,length(radii));
 D = 3e-9; %free water
 n = 3;
 
-xCoords = zeros((STOP_TIME-START_TIME)*movements_per_sec,num_particle); %particle start loc is assume 0,0
-yCoords = zeros((STOP_TIME-START_TIME)*movements_per_sec,num_particle); %particle start loc is assume 0,0
-zCoords = zeros((STOP_TIME-START_TIME)*movements_per_sec,num_particle); %particle start loc is assume 0,0
-
-time = (1:size(xCoords,1))*dt;
+xCoords = zeros(numberOfSteps,num_particle); %particle start loc is assume 0,0
+yCoords = zeros(numberOfSteps,num_particle); %particle start loc is assume 0,0
+zCoords = zeros(numberOfSteps,num_particle); %particle start loc is assume 0,0
 
 for radius = 1:length(radii)
     fprintf("RADIUS %d/%d\n",radius,length(radii));
+%     sd__ = 1.85;%sqrt(STOP_TIME/numberOfSteps);
+    sd__ = 0.58;%sqrt(STOP_TIME/numberOfSteps);
 
-        rand_x_steps = (0.0318.*randn((STOP_TIME-START_TIME)*movements_per_sec,num_particle))*sqrt(2*n*D*dt);
-        rand_y_steps = (0.0318.*randn((STOP_TIME-START_TIME)*movements_per_sec,num_particle))*sqrt(2*n*D*dt);
-        rand_z_steps = (0.0318.*randn((STOP_TIME-START_TIME)*movements_per_sec,num_particle))*sqrt(2*n*D*dt);
-
+    rand_x_steps = sd__.*randn((STOP_TIME-START_TIME)*movements_per_sec,num_particle)*sqrt(2*n*D*dt);
+    rand_y_steps = sd__.*randn((STOP_TIME-START_TIME)*movements_per_sec,num_particle)*sqrt(2*n*D*dt);
+    rand_z_steps = sd__.*randn((STOP_TIME-START_TIME)*movements_per_sec,num_particle)*sqrt(2*n*D*dt);
+            
+%         point_in_sphere = StartingPos(radii(radius),num_particle);
+    xCoords(1,:) = zeros(1,num_particle);
+    yCoords(1,:) = zeros(1,num_particle);
+    zCoords(1,:) = zeros(1,num_particle);
+%             
+%         point_in_sphere = StartingPos(radii(radius),num_particle);
+%         xCoords(1,:) = point_in_sphere(1,:)';
+%         yCoords(1,:) = point_in_sphere(2,:)';
+%         zCoords(1,:) = point_in_sphere(3,:)';
+        
         for step = 2:numberOfSteps
             for idx = 1:num_particle
 
@@ -40,10 +50,13 @@ for radius = 1:length(radii)
 
                 % - two particles cannot exist at same point    
                 %Radius Bounds       
-                XYZ = CheckCircleBounds(radii(radius),test_x,test_y,test_z,rand_x_steps(step,idx),rand_y_steps(step,idx),rand_z_steps(step,idx));
-                xCoords(step, idx) =  XYZ(1,:);
-                yCoords(step, idx) =  XYZ(2,:);
-                zCoords(step, idx) =  XYZ(3,:);
+%                 XYZ = CheckCircleBounds(radii(radius),test_x,test_y,test_z,rand_x_steps(step,idx),rand_y_steps(step,idx),rand_z_steps(step,idx));
+%                 xCoords(step, idx) =  XYZ(1,:);
+%                 yCoords(step, idx) =  XYZ(2,:);
+%                 zCoords(step, idx) =  XYZ(3,:);
+                xCoords(step, idx) =  test_x;
+                yCoords(step, idx) =  test_y;
+                zCoords(step, idx) =  test_z;
 
                 
             end %end of idx
@@ -59,28 +72,40 @@ for radius = 1:length(radii)
         hold on; 
     end
     xlabel('x'), ylabel('y'),zlabel('z');
-% 
-%     line(xlim, [0,0], 'Color', 'k', 'LineWidth', 1);
-%     line([0,0], ylim, 'Color', 'k', 'LineWidth', 1);
     hold off
 %     pause
     
 % 
     % Calculate the distance from the origin.
-    distancesFromOrigin_x = xCoords(end,:);
-    distancesFromOrigin_y = yCoords(end,:);
-    magnitudeFromOrigin = hypot(distancesFromOrigin_x,distancesFromOrigin_y);
+    distancesFromOrigin_x = xCoords(end,:)-xCoords(1,:);
+    distancesFromOrigin_y = yCoords(end,:)-yCoords(1,:);
+    distancesFromOrigin_z = zCoords(end,:)-zCoords(1,:);
     
+
+    magnitudeFromOrigin = sqrt((abs(distancesFromOrigin_x)).^2 +...
+                               (abs(distancesFromOrigin_y)).^2 +...
+                               (abs(distancesFromOrigin_z)).^2);
+                              
 % % 
-%     figure;
-%     histObject = histogram(magnitudeFromOrigin, 25);
-%     grid on;
-%     caption = sprintf('Distribution of %d Final Distances', num_particle);
-%     title(caption);
-%     xlabel('Distance');ylabel('Count');
-%     
-    MSD(1,radius) = mean(abs(magnitudeFromOrigin).^2)
-    D_vec(1,radius) = (MSD(radius)/(2*n*dt))*(1/t)
+    figure;
+    histObject = histogram(magnitudeFromOrigin, 25);
+    grid on;
+    caption = sprintf('Distribution of %d Final Distances', num_particle);
+    title(caption);
+    xlabel('Distance');ylabel('Count');
+    
+    
+    dr_squared = (distancesFromOrigin_x).^2 +...
+                 (distancesFromOrigin_y).^2 +...
+                 (distancesFromOrigin_z).^2;
+                      
+                      
+    MSD(1,radius) = mean(dr_squared);
+%     D_vec(1,radius) = (MSD(radius)/(2*n*dt))*(1/t); WHAT IS CHANGED
+    D_vec(1,radius) = MSD(radius)/(2*n*t)*(1/t);
+
+
+    disp(D_vec);
 end
 %%
 figure
@@ -108,11 +133,11 @@ function result = CheckCircleBounds(r,x1,y1,z1,dx,dy,dz)
     temp = max(test_res);
     temp = max(temp);
     
-    if (temp == 1)
-        
-        mirrored = mirror_trajectory([(x1-dx);(y1-dy);(z1-dz)], [dx;dy;dz]);
-        result = mirrored;
-    end
+%     if (temp == 1)
+%         
+%         mirrored = mirror_trajectory([(x1-dx);(y1-dy);(z1-dz)], [dx;dy;dz]);
+%         result = mirrored;
+%     end
 
 % 
 %     test = (sqrt((abs(x))^2 + (abs(y))^2) < r);
@@ -166,4 +191,26 @@ function result = mirror_trajectory(current_xyz,current_dxdydz)
 %     legend("Original","Rotated")
 
     result = [r(1);r(2);r(3)];
+end
+
+
+function point_in_sphere = StartingPos(radius,nSpins)
+ 
+	n = nSpins;
+    r = (radius-1.0e-9) * (((rand(1,n))').^3);
+    costheta = 2*rand(n,1)-1;
+    sintheta = sqrt(1-costheta.^2);
+    phi=rand(n,1)*(2*pi);
+    x=r.*sintheta.*cos(phi);
+    y=r.*sintheta.*sin(phi);
+    z=r.*costheta;
+
+
+    point_in_sphere = [x';...
+                       y';...
+                       z'];
+%     figure;               
+%     plot3(x,y,z,'.');
+%     xlabel('x'), ylabel('y'),zlabel('z');
+
 end

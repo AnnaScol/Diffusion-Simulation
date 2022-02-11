@@ -41,19 +41,20 @@ function RandomWalkPathGenerator(nSet,nSpins,Vradius,nTimeSteps,diffusionGradien
 
                 end
 
-     %%% Plot of final distribution %%%
-    %         figure; 
-    % 
-    %         for particle = 1:nSpins
-    %             x_ = squeeze(Coords(radius_bounds,1,particle,1:diffusionGradient2_loc(end)));
-    %             y_ = squeeze(Coords(radius_bounds,2,particle,1:diffusionGradient2_loc(end)));
-    %             z_ = squeeze(Coords(radius_bounds,3,particle,1:diffusionGradient2_loc(end)));
-    %             
-    %             plot3(x_, y_, z_, 'Color', rand(1,3), 'MarkerSize', 9);
-    %             xlabel('x'), ylabel('y'),zlabel('z');
-    %             hold on; 
-    %         end
-    %         hold off
+     %% Plot of final distribution %%%
+            figure; 
+    
+            for particle = 1:nSpins
+                x_ = squeeze(Coords(radius_bounds,1,particle,1:diffusionGradient2_loc(end)));
+                y_ = squeeze(Coords(radius_bounds,2,particle,1:diffusionGradient2_loc(end)));
+                z_ = squeeze(Coords(radius_bounds,3,particle,1:diffusionGradient2_loc(end)));
+                
+                plot3(x_, y_, z_, 'Color', rand(1,3), 'MarkerSize', 9);
+                xlabel('x'), ylabel('y'),zlabel('z');
+                hold on; 
+            end
+            hold off
+            pause;
 
         end
 
@@ -66,7 +67,7 @@ function result = InBounds(r,x1,y1,z1,dx,dy,dz)
     %result is dim = 3 x nSpins
     
     origin = [0 0 0];
-%     result = [x1;y1;z1];
+    result = [x1;y1;z1];
 
     mag = sqrt((abs(x1)-origin(1)).^2 + (abs(y1)-origin(2)).^2 + (abs(z1)-origin(3)).^2);
     test_axis_x = sqrt((abs(x1)-origin(1)).^2 + (abs(y1-dy)-origin(2)).^2 + (abs(z1-dz)-origin(3)).^2);
@@ -77,34 +78,35 @@ function result = InBounds(r,x1,y1,z1,dx,dy,dz)
     temp = max(test_res);
     temp = max(temp);
     
-	if (max(test_axis_x >= r))
-        index_list = find((test_axis_x >= r) > 0);
-        x1(index_list) = x1(index_list)-dx(index_list);
-    end
-    
-    if (max(test_axis_y >= r))
-        index_list = find((test_axis_y >= r) > 0);
-        y1(index_list) = y1(index_list)-dy(index_list);
-    end
-    
-    if (max(test_axis_z >= r))
-        index_list = find((test_axis_z >= r) > 0);
-        z1(index_list) = z1(index_list)-dz(index_list);
-    end
+% 	if (max(test_axis_x >= r))
+%         index_list = find((test_axis_x >= r) > 0);
+%         x1(index_list) = x1(index_list)-dx(index_list);
+%     end
+%     
+%     if (max(test_axis_y >= r))
+%         index_list = find((test_axis_y >= r) > 0);
+%         y1(index_list) = y1(index_list)-dy(index_list);
+%     end
+%     
+%     if (max(test_axis_z >= r))
+%         index_list = find((test_axis_z >= r) > 0);
+%         z1(index_list) = z1(index_list)-dz(index_list);
+%     end
     
     
     result = [x1;y1;z1];
 
     
     
-%     if (temp == 1)
-%         
-%         need_to_mirror = sum(test_res);
-%         index_list = find(need_to_mirror>0);
-%     
-%         mirrored = mirror_trajectory([(x1-dx);(y1-dy);(z1-dz)], [dx;dy;dz],index_list);
-%         result = mirrored;
-%     end
+    if (temp == 1)
+        
+        need_to_mirror = sum(test_res);
+        index_list = find(need_to_mirror>0);
+    
+        mirrored = mirror_trajectory([(x1-dx);(y1-dy);(z1-dz)], [dx;dy;dz],index_list,r);
+        result = mirrored;
+    end
+    
 end
 
 
@@ -146,54 +148,54 @@ end
 
 %% %%% from other file %%%
 
+% 
+% TODO:
+% Should probably vectorise this
+function result = mirror_trajectory(previous_xyz,current_dxdydz, index_list,radius)
+    
+    x0 = previous_xyz(1,:);
+    y0 = previous_xyz(2,:);
+    z0 = previous_xyz(3,:);
+    
+    x1 = x0 + current_dxdydz(1,:);
+    y1 = y0 + current_dxdydz(2,:);
+    z1 = z0 + current_dxdydz(3,:);
+    
+    result = [x1;y1;z1];
+    
+    vertex_x0y0z0 = [x0',y0',z0']; 
+    vertex_x1y1z1 = [x1',y1',z1'];
+    
+%     figure;
+    for i =1:length(index_list)
+        
+        V = [vertex_x0y0z0(index_list(i),:);...
+             vertex_x1y1z1(index_list(i),:)];
+         
+        plot3(V(:,1),V(:,2),V(:,3),'k.-','MarkerSize',25,'Color', rand(1,3)); 
+        xlabel('x'), ylabel('y'),zlabel('z');
+        hold on
+        
+        A = vertex_x0y0z0(index_list(i),:);
+        B = vertex_x1y1z1(index_list(i),:);
+        x = [V(1,1);V(2,1)];
+        y = [V(1,2);V(2,2)];
+        z = [V(1,3);V(2,3)];
 
-%TODO:
-%Should probably vectorise this
-% function result = mirror_trajectory(previous_xyz,current_dxdydz, index_list)
-%     
-%     x0 = previous_xyz(1,:);
-%     y0 = previous_xyz(2,:);
-%     z0 = previous_xyz(3,:);
-%     
-%     x1 = x0 + current_dxdydz(1,:);
-%     y1 = y0 + current_dxdydz(2,:);
-%     z1 = z0 + current_dxdydz(3,:);
-%     
-%     result = [x1;y1;z1];
-%     
-%     vertex_x0y0z0 = [x0',y0',z0']; 
-%     vertex_x1y1z1 = [x1',y1',z1'];
-%     
-% %     figure;
-%     for i =1:length(index_list)
-%         
-%         V = [vertex_x0y0z0(index_list(i),:);...
-%              vertex_x1y1z1(index_list(i),:)];
-%          
-%         plot3(V(:,1),V(:,2),V(:,3),'k.-','MarkerSize',25,'Color', rand(1,3)); 
-%         xlabel('x'), ylabel('y'),zlabel('z');
-%         hold on
-%         
-%         A = vertex_x0y0z0(index_list(i),:);
-%         B = vertex_x1y1z1(index_list(i),:);
-%         x = [V(1,1);V(2,1)];
-%         y = [V(1,2);V(2,2)];
-%         z = [V(1,3);V(2,3)];
-%         
-%         normal = ([mean(x),mean(y),mean(z)] + null(A-B)');
-%         normal = (normal(:,:)./sqrt(sum(normal(:,:).*normal(:,:))))*1e-6;%
-%         
-%         
-%         plot3([B(1),normal(1,1)],[B(2),normal(1,2)],[B(3),normal(1,3)],'r.-','LineWidth',1)
-%         legend("Original","Rotated")
-% 
-%         x1(index_list(i)) = normal(1);
-%         y1(index_list(i)) = normal(2);
-%         z1(index_list(i)) = normal(3);
-%         result = [x1;y1;z1];
-%     end
-% 
-% end
+%         plot3([V(1,1),P(2,1)],[V(1,2),P(2,2)],[V(1,),P(2,3)],'b.-','LineWidth',1)
+
+%         legend("Original","Plane");%,"Normal")%,"Rotated")
+
+        x1(index_list(i)) = plane(1,1);%normal(1);
+        y1(index_list(i)) = plane(1,2);%normal(2);
+        z1(index_list(i)) = plane(1,3);%normal(3);
+        
+        
+        
+        result = [x1;y1;z1];
+    end
+
+end
 
 % 
 % %TODO:

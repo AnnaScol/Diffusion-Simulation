@@ -9,15 +9,17 @@ fimplicit3(feqn)
 axis equal
 axis([-6 6 -6 6 -6 6])
 
-fgrad = gradient(f,r)
+fgrad = gradient(f,r);
 size(fgrad)
 
 % Define the equation for the tangent plane. Use the subs function to
 % evaluate the gradient at the point r0
-r0 = [-2,1,3];
-r_v = [-1.5,0.8,2.5];
+% r0 = [-2.1,0.9,3.05]; %equation for incoming line
+% r_v = [-1.5,0.8,2.5];
+r0 = [0.0911,0.1693,0.0524]*1.0e-04;
+r_v = [0.0876,0.1668,0.0552]*1.0e-04;
 
-fplane = (r-r0)*subs(fgrad,r,r0);
+% fplane = (r-r0)*subs(fgrad,r,r0);
 %  plot
 hold on
 % scatter3(r0(1),r0(2),r0(3),'ro')
@@ -37,7 +39,7 @@ n(t) = r0 - t*subs(fgrad,r,r0).'; % normal line
 V = [r0;r_v];
 new = [n(0); n(0.1)];
 %rotate about normal line
-final_temp = V-dot(V,new).*new;
+final_temp = V-2*dot(V,new).*new;
 final = [n(0);final_temp(1,:)];
 % final=final_temp;
 
@@ -47,7 +49,7 @@ C = final(2,:); %normal line
 
 S1 = B - A;
 S2 = C - A;
-Theta = atan2(norm(cross(S1, S2)), dot(S1, S2))
+Theta = atan2(norm(cross(S1, S2)), dot(S1, S2));
 
 test = S2*sind(Theta);
 %find distance between point and normal line

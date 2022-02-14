@@ -172,25 +172,76 @@ function result = mirror_trajectory(previous_xyz,current_dxdydz, index_list,radi
         V = [vertex_x0y0z0(index_list(i),:);...
              vertex_x1y1z1(index_list(i),:)];
          
-        plot3(V(:,1),V(:,2),V(:,3),'k.-','MarkerSize',25,'Color', rand(1,3)); 
-        xlabel('x'), ylabel('y'),zlabel('z');
-        hold on
+%         plot3(V(:,1),V(:,2),V(:,3),'k.-','MarkerSize',25,'Color', rand(1,3)); 
+%         xlabel('x'), ylabel('y'),zlabel('z');
+%         hold on
         
-        A = vertex_x0y0z0(index_list(i),:);
-        B = vertex_x1y1z1(index_list(i),:);
-        x = [V(1,1);V(2,1)];
-        y = [V(1,2);V(2,2)];
-        z = [V(1,3);V(2,3)];
+        % NEW PART
+        syms r [1 3] 
+        f = r*r.';
+        
+        feqn = (f == radius); %radius is 14^(0.5)
+        fgrad = gradient(f,r);
+
+        size(fgrad);
+
+        % Define the equation for the tangent plane. Use the subs function to
+        % evaluate the gradient at the point r0
+        r0 = vertex_x0y0z0(index_list(i),:);%[0.0911,0.1693,0.0524]*1.0e-04;
+        r_v = vertex_x1y1z1(index_list(i),:);%[0.0876,0.1668,0.0552]*1.0e-04;
+
+
+        %equation for normal line
+        syms t
+        n = r0 - t*subs(fgrad,r,r0).'; % normal line
+        mag_ = r_v-r0;
+        mag_ = sqrt((mag_(1)^2)+(mag_(2)^2)+(mag_(3)^2));
+        
+
+        fplot3(n(1),n(2),n(3),[0 0.05],'b-','LineWidth',4);
+
+        syms n(t)
+        n(t) = r0 - t*subs(fgrad,r,r0).'; % normal line
+
+        V = [r0;r_v];
+        new = [n(0); n(1)];
+        new = new/norm(new); %need to normalize
+        
+        %rotate about normal line
+        
+        final_temp = V-2*dot(V,new).*new;
+        final = [n(0);final_temp(2,:)];
+        % final=final_temp;
+
+%         A = r0;
+%         B = r_v; %starting line
+%         C = final(2,:); %normal line
+% 
+%         S1 = B - A;
+%         S2 = C - A;
+%         Theta = atan2(norm(cross(S1, S2)), dot(S1, S2));
+
+%         test = S2*sind(Theta);
+        %find distance between point and normal line
+        plot3([r0(1); final(2,1)],[r0(2); final(2,2)],[r0(3); final(2,3)],'g', 'LineWidth',3);
+%         plot3([r0(1); test(1)],[r0(2); test(2)],[r0(3); test(3)],'g', 'LineWidth',3)
+
+
+%         A = vertex_x0y0z0(index_list(i),:);
+%         B = vertex_x1y1z1(index_list(i),:);
+%         x = [V(1,1);V(2,1)];
+%         y = [V(1,2);V(2,2)];
+%         z = [V(1,3);V(2,3)];
 
 %         plot3([V(1,1),P(2,1)],[V(1,2),P(2,2)],[V(1,),P(2,3)],'b.-','LineWidth',1)
 
 %         legend("Original","Plane");%,"Normal")%,"Rotated")
 
-        x1(index_list(i)) = plane(1,1);%normal(1);
-        y1(index_list(i)) = plane(1,2);%normal(2);
-        z1(index_list(i)) = plane(1,3);%normal(3);
-        
-        
+        x1(index_list(i)) = final(2,1);%normal(1);
+        y1(index_list(i)) = final(2,2);%normal(2);
+        z1(index_list(i)) = final(2,3);%normal(3);
+%         
+%         
         
         result = [x1;y1;z1];
     end

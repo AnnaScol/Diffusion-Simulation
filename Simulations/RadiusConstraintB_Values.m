@@ -26,8 +26,8 @@ ldelta = 0.011; %ms was 0.04
 sdelta = 0.003; %ms was 0.02
 D = 3e-9; %m^2/ms
 
-nSpins = 4000;
-G = ([0,5,7.5,10,12.5,15,17.5,20,22,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,110,120,150]*1e-3)*15; %mT
+nSpins = 2000;
+G = ([0,5,7.5,10,12.5,15,17.5,20,22,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,110]*1e-3)*15; %mT
 % G = ([0,5,10,15,25,30,40,50,70,80,100,125,150]*1e-3); %mT
 % G = ([0,5,10,15,25,30,40,50,70,80,100]*1e-3)*15; %mT
 
@@ -42,7 +42,7 @@ T2 = 1000*(10^-3);
 TE = 20*(10^-3);
 
 % constraint_radii = ([1 2.5 5 7.5 10 12.5 15 20 1.0e6]*1e-6); 
-constraint_radii = ([1 5 10 20 40 80]*1e-6); 
+constraint_radii = ([2 5 10 20 40 80]*1e-6); 
 
 for i=1:nTimeSteps %i starts at 1 go's to 15000
     time(i)    = i*dt;                       %Time in seconds
@@ -82,19 +82,20 @@ subplot(2,1,2); plot(time,gradAmp(3,:),'b-','LineWidth',2);title('Slice Select G
 xlabel('time (s)'), ylabel('G_{z}(T/m)');grid on;
 
 % %% Get location matrix --> 3 x nSpins dimensions
-nSet = 20;
+nSet = 40;
 SetsOfSpins = nSet;
 store_final_vect = zeros(SetsOfSpins,length(b),length(constraint_radii));
 n    = 3;
 %% %%%%%%%%%%%%% COORDS SETUP %%%%%%%%%%%%%
-RandomWalkPathGenerator(nSet,nSpins,constraint_radii,nTimeSteps,diffusionGradient2_loc,D,n,dt)
+ReTry_RandomWalkPathGenerator(nSet,nSpins,constraint_radii,nTimeSteps,diffusionGradient2_loc,D,n,dt)
 
 %% %%%%%%%%%%%%% Perform sequence %%%%%%%%% 
 
 for SpinSet = 1:nSet
     
     fprintf("\n\n Set %d/%d \n\n",SpinSet,SetsOfSpins);
-    load(sprintf("3D_Coords/Coords%d.mat",SpinSet));
+    file_path = "C:\Users\s4427550\3D_Coords";%3D_Coords/Coords
+    load(sprintf("%s%d.mat",file_path,SpinSet));
 
     
     for radius_bounds = 1:length(constraint_radii)
@@ -145,35 +146,7 @@ end
 save('mat_store/6_Large_final_vect.mat','store_final_vect')
 %% Sum all results 
 final_res = squeeze(sum((store_final_vect),1)./SetsOfSpins);
-%%
-
-for i = 1:length(constraint_radii)
-    figure(4);
-    subplot(2,1,1);
-    log_vals = -log(abs(final_res(:,i))./(b*1e-6)');
-    log_vals(1) = 1;
-    plot(b*1e-6,log_vals,'.-','LineWidth',2);
-    xlabel('b (s/mm^2)'), ylabel('ln(|M_{xy}|/b)');grid on;
-    title('Log Diffusion Attenuation (80,000Spins 3/11ms)');
-    hold on
-    drawnow
-    
-    figure(4);
-    subplot(2,1,2);
-    plot(b*1e-6,abs(final_res(:,i)),'.-','LineWidth',2);
-    xlabel('b (s/mm^2)'), ylabel('|M_{xy}|');grid on;
-    title('Absolute of Diffusion Attenuation (80,000Spins 3/11ms)');
-    hold on
-    drawnow
-end
-% figure(2);
-subplot(2,1,1);
-legend("1*1e-6","5*1e-6","10*1e-6","20*1e-6","40*1e-6","80*1e-6")
-subplot(2,1,2);
-legend("1*1e-6","5*1e-6","10*1e-6","20*1e-6","40*1e-6","80*1e-6")
-
-% legend("1*1e-6","5*1e-6","10*1e-6","15*1e-6","20*1e-6","Free Space")
-
-
-
-
+save('mat_store/compare_result2_40x2000spins.mat','final_res')
+%% Plot the results
+nFig = 4;
+plot_signal_vs_b_results(length(constraint_radii), final_res, b, nFig)

@@ -3,8 +3,8 @@ clear all; clc; close all; % clean up
 
 num_particle      = 1000; 
 START_TIME        = 0; %sec
-STOP_TIME         = 0.1; %sec
-movements_per_sec = 100000;
+STOP_TIME         = 0.05; %sec
+movements_per_sec = 1000000;
 dt = (STOP_TIME-START_TIME)/movements_per_sec;
 t = movements_per_sec*dt;
 numberOfSteps = (STOP_TIME-START_TIME)*movements_per_sec;
@@ -67,12 +67,12 @@ for radius = 1:length(radii)
 
     % figure; hold on
     
-    for particle = 1:num_particle
-        plot3(xCoords(:,particle),yCoords(:,particle),zCoords(:,particle),'Color', rand(1,3), 'MarkerSize', 9);
-        hold on; 
-    end
-    xlabel('x'), ylabel('y'),zlabel('z');
-    hold off
+%     for particle = 1:num_particle
+%         plot3(xCoords(:,particle),yCoords(:,particle),zCoords(:,particle),'Color', rand(1,3), 'MarkerSize', 9);
+%         hold on; 
+%     end
+%     xlabel('x'), ylabel('y'),zlabel('z');
+%     hold off
 %     pause
     
 % 
@@ -102,7 +102,7 @@ for radius = 1:length(radii)
                       
     MSD(1,radius) = mean(dr_squared);
 %     D_vec(1,radius) = (MSD(radius)/(2*n*dt))*(1/t); WHAT IS CHANGED
-    D_vec(1,radius) = MSD(radius)/(2*n*t)*(1/t);
+    D_vec(1,radius) = MSD(radius)/(2*n*t)*(1/(STOP_TIME-START_TIME));
 
 
     disp(D_vec);

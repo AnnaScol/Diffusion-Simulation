@@ -56,9 +56,9 @@ function ReTry_RandomWalkPathGenerator(nSet,nSpins,Vradius,nTimeSteps,diffusionG
 
         end %end of one radius cycle value
         
-        file_path = "3D_Coords/"; %         save(sprintf('3D_Coords/Coords%d.mat',set),'Coords');
+        file_path = "3D_Coords/Coords"; %         save(sprintf('3D_Coords/Coords%d.mat',set),'Coords');
 
-        save(sprintf('%s%d.mat',file_path,set),'Coords');
+        save(sprintf('%s%d.mat',file_path,set),'Coords','-v7.3');
     end % end of each set of spins
 end
 

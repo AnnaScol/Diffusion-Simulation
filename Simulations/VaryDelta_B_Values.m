@@ -20,8 +20,8 @@ nSpins = 2000;
 G = [100]*1e-3; %mT
 nG = length(G);
 %the result of bDelta is only larger than sDelta at b-values > 200
-b_values = [0 50 100 200 300 400 500 750 1000 1500 2000 2500 3000 4000 ...
-                5000 6000 7000 8000 9000 10000 11000 13000 14000 16500 18000]/1e-6;
+b_values = [0 25 50 75 100 150 200 250 300 400 500 750 1000 1500 2000 2500 3000 4000 ...
+                5000 6000 7000 8000 9000 10000 11000 13000 14000 15000]/1e-6;
 bDelta_values = solveBforDelta('b', sdelta, b_values ,G);
 nB = length(b_values);
 mFinalVect = zeros(nG,2); %variable to hold the final magnetization calculated for each position
@@ -37,7 +37,7 @@ adc         = zeros(1,nTimeSteps); %variable to hold a gradient waveform
 time        = zeros(1,nTimeSteps); %variable to hold the time points
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-constraint_radii = ([2 5 10 20 40 80]*1e-6); 
+constraint_radii = ([5 7 9 10 12 15 20]*1e-6); 
 
 for i=1:nTimeSteps %i starts at 1 go's to 15000
     time(i)    = i*dt;                       %Time in seconds
@@ -89,7 +89,7 @@ ReTry_RandomWalkPathGenerator(nSet,nSpins,constraint_radii,nTimeSteps,diffusionG
 for SpinSet = 1:nSet
     
     fprintf("\n\n Set %d/%d \n\n",SpinSet,SetsOfSpins);
-    file_path = "3D_Coords/";%3D_Coords/Coords
+    file_path = "3D_Coords/Coords";%3D_Coords/Coords
     load(sprintf("%s%d.mat",file_path,SpinSet));
 
     
@@ -104,7 +104,7 @@ for SpinSet = 1:nSet
             result_struct = MRI_Sequence(pulsedurE, pulsedurR, sdelta,  bDelta_values(i), G,nTimeSteps, dt);
             
            
-            gradAmp(3,:) =  result_struct.gradAmp(3,:);
+            gradAmp(3,1:length(result_struct.gradAmp(3,:))) =  result_struct.gradAmp(3,:);
             rfPulse = result_struct.rfPulse;
             %%
             mT = zeros(3,nSpins);
@@ -124,14 +124,14 @@ for SpinSet = 1:nSet
                 [mT,mZ] =  bloch(dt,dB0,rfPulse(j),T1,T2,mT,mZ); 
 
                 % condition is true if it has reached the read point
-                if (j > diffusionGradient2_loc(end))
+                if (j > result_struct.END_diffusionGradient2_loc)
                     mFinalVect(i,:) = [mean(mT,'all'), mean(mZ,'all')];  
                     break;
                 end
 
             end
 
-            disp(['b-value = ' num2str(round(b(i)*1e-6))]);
+            disp(['b-value = ' num2str(round(b_values(i)*1e-6))]);
         end
 
 
@@ -147,4 +147,4 @@ save('mat_store/testing.mat','store_final_vect')
 final_res = squeeze(sum((store_final_vect),1)./SetsOfSpins);
 %% Plot the results
 nFig = 4;
-plot_signal_vs_b_results(length(constraint_radii), final_res, b, nFig)
+plot_signal_vs_b_results(length(constraint_radii), final_res, b_values, nFig)

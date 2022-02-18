@@ -7,21 +7,21 @@ clear all; clc; close all; % clean up
 tmp = matlab.desktop.editor.getActive;  % get location of this script
 cd(fileparts(tmp.Filename));            % set working directory to same
 
-dt    = 2*10^-5; 
+dt    = 1*10^-6; 
 gamma = 2*pi*42.577*10^6;
 
 % %% Parameters %% %
 
 % Diffusion Gradients
 % ldelta = 0.003; %ms was 0.04
-sdelta = 0.007; %ms was 0.02
+sdelta = 0.003; %ms was 0.02
 D = 3e-9; %m^2/ms
-nSpins = 2000;
-G = [100]*1e-3; %mT
+nSpins = 50;
+G = [120]*1e-3; %mT
 nG = length(G);
 %the result of bDelta is only larger than sDelta at b-values > 200
-b_values = [0 25 50 75 100 150 200 250 300 400 500 750 1000 1500 2000 2500 3000 4000 ...
-                5000 6000 7000 8000 9000 10000 11000 13000 14000 15000]/1e-6;
+b_values = [0 50 100 150 200 250 300 400 500 750 1000 1250 1500 1750 2000 2500 3000 4000 ...
+                5000 6000 7000 8000 9000 10000]/1e-6;
 bDelta_values = solveBforDelta('b', sdelta, b_values ,G);
 nB = length(b_values);
 mFinalVect = zeros(nG,2); %variable to hold the final magnetization calculated for each position
@@ -37,7 +37,7 @@ adc         = zeros(1,nTimeSteps); %variable to hold a gradient waveform
 time        = zeros(1,nTimeSteps); %variable to hold the time points
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-constraint_radii = ([5 7 9 10 12 15 20]*1e-6); 
+constraint_radii = ([3 4 5 6 8 10]*1e-6); 
 
 for i=1:nTimeSteps %i starts at 1 go's to 15000
     time(i)    = i*dt;                       %Time in seconds
@@ -58,7 +58,7 @@ rfPulseR = apodize_sinc_rf(length(rfStepsR),3,pi,dt); %B1+ in Tesla
 diffusionGradient1_loc = round((1:(sdelta/dt))+ pulsedurE/dt);
 gradAmp(3,diffusionGradient1_loc) =  G; %Z gradients in Tesla per meter
 % Diffusion pulse 2
-diffusionGradient2_loc = round((1:(sdelta/dt)) + pulsedurE/dt + pulsedurR/dt + bDelta_values(1)/dt);
+diffusionGradient2_loc = round((1:(sdelta/dt)) + pulsedurE/dt + pulsedurR/dt + bDelta_values(5)/dt);
 gradAmp(3,diffusionGradient2_loc) =  G; %Z gradients in Tesla per meter
 %%% RF excitation pulse %%%
 TE = diffusionGradient2_loc(end)*dt;
@@ -76,7 +76,7 @@ subplot(2,1,2); plot(time,gradAmp(3,:),'b-','LineWidth',2);title('Slice Select G
 xlabel('time (s)'), ylabel('G_{z}(T/m)');grid on;
 %%
 % %% Get location matrix --> 3 x nSpins dimensions
-nSet = 1;
+nSet = 20;
 SetsOfSpins = nSet;
 store_final_vect = zeros(SetsOfSpins,length(bDelta_values),length(constraint_radii));
 n    = 3;

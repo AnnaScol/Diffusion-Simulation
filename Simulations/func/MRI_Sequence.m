@@ -25,4 +25,6 @@ function result_struct = MRI_Sequence(pulsedurE, pulsedurR, sdelta, bdelta, G, n
     result_struct.gradAmp = gradAmp;
     result_struct.rfPulse = [rfPulse zeros(1,(diffusionGradient2_loc(end)-length(rfPulse))+1)];
     result_struct.END_diffusionGradient2_loc = diffusionGradient2_loc(end);
+    result_struct.diffusionGradient1_loc = diffusionGradient1_loc;
+    result_struct.diffusionGradient2_loc = diffusionGradient2_loc;
 end

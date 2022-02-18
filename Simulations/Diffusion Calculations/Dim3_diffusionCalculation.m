@@ -1,7 +1,7 @@
 %% Simulate Random Walk for n Particle that Starts Randomly in 3D Sphere
 clear all; clc; close all; % clean up
 
-num_particle      = 1000; 
+num_particle      = 500; 
 START_TIME        = 0; %sec
 STOP_TIME         = 0.05; %sec
 movements_per_sec = 1000000;
@@ -9,7 +9,7 @@ dt = (STOP_TIME-START_TIME)/movements_per_sec;
 t = movements_per_sec*dt;
 numberOfSteps = (STOP_TIME-START_TIME)*movements_per_sec;
 
-radii = (7*1e-6);
+radii = (10*1e-6);
 % radii = (linspace(1,15,30)*1e-6);
 
 MSD = zeros(1,length(radii));
@@ -25,7 +25,7 @@ zCoords = zeros(numberOfSteps,num_particle); %particle start loc is assume 0,0
 for radius = 1:length(radii)
     fprintf("RADIUS %d/%d\n",radius,length(radii));
 %     sd__ = 1.85;%sqrt(STOP_TIME/numberOfSteps);
-    sd__ = 0.58;%sqrt(STOP_TIME/numberOfSteps);
+    sd__ = 0.58;%sqrt(STOP_TIME/numberOfSteps); was 0.58
 
     rand_x_steps = sd__.*randn((STOP_TIME-START_TIME)*movements_per_sec,num_particle)*sqrt(2*n*D*dt);
     rand_y_steps = sd__.*randn((STOP_TIME-START_TIME)*movements_per_sec,num_particle)*sqrt(2*n*D*dt);
@@ -50,13 +50,13 @@ for radius = 1:length(radii)
 
                 % - two particles cannot exist at same point    
                 %Radius Bounds       
-%                 XYZ = CheckCircleBounds(radii(radius),test_x,test_y,test_z,rand_x_steps(step,idx),rand_y_steps(step,idx),rand_z_steps(step,idx));
-%                 xCoords(step, idx) =  XYZ(1,:);
-%                 yCoords(step, idx) =  XYZ(2,:);
-%                 zCoords(step, idx) =  XYZ(3,:);
-                xCoords(step, idx) =  test_x;
-                yCoords(step, idx) =  test_y;
-                zCoords(step, idx) =  test_z;
+                XYZ = InBounds(radii(radius),test_x,test_y,test_z,rand_x_steps(step,idx),rand_y_steps(step,idx),rand_z_steps(step,idx));
+                xCoords(step, idx) =  XYZ(1,:);
+                yCoords(step, idx) =  XYZ(2,:);
+                zCoords(step, idx) =  XYZ(3,:);
+%                 xCoords(step, idx) =  test_x;
+%                 yCoords(step, idx) =  test_y;
+%                 zCoords(step, idx) =  test_z;
 
                 
             end %end of idx
@@ -65,15 +65,15 @@ for radius = 1:length(radii)
 
     %% Plotting avg walk for particles
 
-    % figure; hold on
+    figure; hold on
     
-%     for particle = 1:num_particle
-%         plot3(xCoords(:,particle),yCoords(:,particle),zCoords(:,particle),'Color', rand(1,3), 'MarkerSize', 9);
-%         hold on; 
-%     end
-%     xlabel('x'), ylabel('y'),zlabel('z');
-%     hold off
-%     pause
+    for particle = 1:num_particle
+        plot3(xCoords(:,particle),yCoords(:,particle),zCoords(:,particle),'Color', rand(1,3), 'MarkerSize', 9);
+        hold on; 
+    end
+    xlabel('x'), ylabel('y'),zlabel('z');
+    hold off
+   
     
 % 
     % Calculate the distance from the origin.
@@ -102,7 +102,9 @@ for radius = 1:length(radii)
                       
     MSD(1,radius) = mean(dr_squared);
 %     D_vec(1,radius) = (MSD(radius)/(2*n*dt))*(1/t); WHAT IS CHANGED
-    D_vec(1,radius) = MSD(radius)/(2*n*t)*(1/(STOP_TIME-START_TIME));
+%     D_vec(1,radius) = MSD(radius)/(2*n*t)*(1/(STOP_TIME-START_TIME));
+    D_vec(1,radius) = MSD(radius)/(2*n*numberOfSteps*dt);%*(1/(STOP_TIME-START_TIME));
+
 
 
     disp(D_vec);
@@ -117,6 +119,108 @@ title("Diffusivity varying over Radii Constraints");
 legend('D-Measurements', 'Free water D = 3e-9');
 
 %%
+
+
+
+function result = InBounds(r,x1,y1,z1,dx,dy,dz)
+    %result is dim = 3 x nSpins
+    origin = [0 0 0];
+    result = [x1;y1;z1];
+
+    mag_ = sqrt((abs(x1)-origin(1)).^2 + (abs(y1)-origin(2)).^2 + (abs(z1)-origin(3)).^2);
+    test_res = (mag_>=r);
+    temp = max(test_res);
+    temp = max(temp);
+    
+    if temp == 1
+        test = 1;
+        D = 3e-9;
+        n = 3;
+        dt = 10.0e-6;
+        sd__ = 0.58;%sqrt(STOP_TIME/numberOfSteps);
+
+        index_list_ = find((mag_ >= r) > 0);
+        counter = 0;
+
+        while( test == 1 )
+            if (counter == 0)
+                %dxdydz step distributions
+                rnd_x = sd__.*randn(1,length(index_list_))*sqrt(2*n*D*dt);
+                rnd_y = sd__.*randn(1,length(index_list_))*sqrt(2*n*D*dt);
+                rnd_z = sd__.*randn(1,length(index_list_))*sqrt(2*n*D*dt);
+
+                pos_0 = [(x1(index_list_)-dx(index_list_));...
+                         (y1(index_list_)-dy(index_list_));...
+                         (z1(index_list_)-dz(index_list_))];
+                      
+                test_res = pos_0 + [rnd_x;rnd_y;rnd_z];
+
+                mag = sqrt((abs(test_res(1,:))-origin(1)).^2 + (abs(test_res(2,:))-origin(2)).^2 + (abs(test_res(3,:))-origin(3)).^2);
+                temp = (mag>=r);
+                
+                %update the ones that are now correct
+                index_list = find((mag < r) > 0); 
+                
+                if (max(index_list)==1)
+                    result(:,index_list_(index_list)) = test_res(:,(index_list));
+                    x1(index_list_(index_list)) = result(1,(index_list_(index_list))); 
+                    y1(index_list_(index_list)) = result(2,(index_list_(index_list))); 
+                    z1(index_list_(index_list)) = result(3,(index_list_(index_list)));
+                end
+                %test if code should stop
+                test = max(temp);
+                if (test == 0)
+                    break;
+                end 
+                
+                counter = 1;
+            else
+                
+                %find index values that need to be re-generated
+                mag = sqrt((abs(result(1,:))-origin(1)).^2 + (abs(result(2,:))-origin(2)).^2 + (abs(result(3,:))-origin(3)).^2);
+                index_list_ = find((mag >= r) > 0); 
+                 
+                %dxdydz step distributions
+                rnd_x = sd__.*randn(1,length(index_list_))*sqrt(2*n*D*dt);
+                rnd_y = sd__.*randn(1,length(index_list_))*sqrt(2*n*D*dt);
+                rnd_z = sd__.*randn(1,length(index_list_))*sqrt(2*n*D*dt);
+                
+                %remove prpevious delta_pos to add ned one on
+                pos_0 = [(x1(index_list_)-dx(index_list_));...
+                         (y1(index_list_)-dy(index_list_));...
+                         (z1(index_list_)-dz(index_list_))];
+                      
+                                        
+                test_res = pos_0 + [rnd_x;rnd_y;rnd_z];
+                
+                %test if new step is within the magnitude conditions
+                mag = sqrt((abs(test_res(1,:))-origin(1)).^2 + (abs(test_res(2,:))-origin(2)).^2 + (abs(test_res(3,:))-origin(3)).^2);
+                temp = (mag>=r);
+                
+                %update the ones that are now correct
+                index_list_update = find((mag < r) > 0); 
+                if (max(index_list_update)>0)
+                    result(:,index_list_(index_list_update)) = test_res(:,(index_list_update));
+%                     x1(index_list_(index_list_update)) = test_res(1,(index_list_update)); 
+%                     y1(index_list_(index_list_update)) = test_res(2,(index_list_update)); 
+%                     z1(index_list_(index_list_update)) = test_res(3,(index_list_update));
+                end
+                
+                %if no values are above r, then continue code
+                test = max(temp);
+                if (test == 0)
+                    break;
+                end 
+                   
+            end % end of if counter == 1 || counter == 0
+        end % end of while
+    end % end of (temp == 1)
+end
+
+
+
+
+
 %check if value is within circle
 % 1) if (x-x0)^2 + (y-y0)^2 < r^2, the point (x,y) is inside the circle,
 % 2) if (x-x0)^2 + (y-y0)^2 == r^2, the point (x,y) is on the circle, and
@@ -148,6 +252,8 @@ function result = CheckCircleBounds(r,x1,y1,z1,dx,dy,dz)
 %     end
     
 end
+
+
 
 function result = mirror_trajectory(current_xyz,current_dxdydz)
     

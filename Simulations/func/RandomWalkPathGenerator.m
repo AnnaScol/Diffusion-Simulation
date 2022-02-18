@@ -1,4 +1,4 @@
-function ReTry_RandomWalkPathGenerator(nSet,nSpins,Vradius,nTimeSteps,diffusionGradient2_loc,D,n,dt)
+function RandomWalkPathGenerator(nSet,nSpins,Vradius,nTimeSteps,diffusionGradient2_loc,D,n,dt)
     %%%%%%%%%%%%% COORDS SETUP %%%%%%%%%%%%%
     Coords = zeros(length(Vradius),3,nSpins,nTimeSteps); %particle start loc is assume 0,0,0
 

@@ -1,0 +1,30 @@
+function result = simulateMRISequence(G,rfPulse,T1,T2,dG1_loc,dG2_loc,Spin_locs,nSpins)
+
+    gradAmp(3,dG1_loc) =  G; %Z gradients in Tesla per meter
+    gradAmp(3,dG2_loc) =  G; %Z gradients in Tesla per meter
+
+    mT = zeros(3,nSpins);
+    mZ = ones(3,nSpins);
+
+    %starting spin locations
+    [mT,mZ] =  bloch(dt,([squeeze(Coords(radius_bounds,1,:,1)),...
+                          squeeze(Coords(radius_bounds,2,:,1)), ...
+                          squeeze(Coords(radius_bounds,3,:,1))]'),0,T1,T2,mT,mZ); 
+
+    for j = 2:nTimeSteps
+
+        dB0 = gradAmp(:,j)'*([squeeze(Coords(radius_bounds,1,:,j)),...
+                              squeeze(Coords(radius_bounds,2,:,j)), ...
+                              squeeze(Coords(radius_bounds,3,:,j))]'); 
+
+        [mT,mZ] =  bloch(dt,dB0,result_struct.rfPulse(j),T1,T2,mT,mZ); 
+
+        % condition is true if it has reached the read point
+        if (j > result_struct.END_diffusionGradient2_loc)
+            mFinalVect(i,:) = [mean(mT,'all'), mean(mZ,'all')];  
+            break;
+        end
+
+    end
+
+end

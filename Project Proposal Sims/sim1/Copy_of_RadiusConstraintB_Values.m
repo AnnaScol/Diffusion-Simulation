@@ -53,19 +53,15 @@ for SpinSet = 1:nSet
     for radius_bounds = 1:length(constraint_radii)
         disp("Starting sequence");
         spinLocs = squeeze(Coords(radius_bounds,:,:,:));
-        
-        for i = 1:nG
-            mFinalVect(i,:) = simulateMRISequence(G(i),gradAmp,rfPulse,T1,T2,diffusionGradient1_loc,diffusionGradient2_loc,spinLocs,nSpins,dt);
-            disp(['b-value = ' num2str(round(b(i)))]);
-            
-        end
-        
+       
+        mFinalVect = GVec_simulateMRISequence(G,gradAmp,rfPulse,T1,T2,diffusionGradient1_loc,diffusionGradient2_loc,spinLocs,nSpins,dt);
+        disp(['b-value = ' num2str(round(b(1:nG)))]);
+
         store_final_vect(SpinSet,:,radius_bounds) = (mFinalVect(:,1));
     end
         
 end
 toc
-
 str = sprintf("raw_%dx%dSpins_vec.mat",nSet,nSpins);
 save(sprintf('mat_store/%s.mat', str),'store_final_vect');
 %% Sum all results 

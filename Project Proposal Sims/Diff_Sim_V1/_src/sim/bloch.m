@@ -1,4 +1,4 @@
-function [ mtOut, mzOut  ] = Copy_of_bloch(dt,dB0,B1,T1,T2,mt,mz) %1sec
+function [ mtOut, mzOut  ] = bloch(dt,dB0,B1,T1,T2,mt,mz) %1sec
 
    gamma = 2*pi*42.577*10^6; % rad Hz per Tesla
     
@@ -10,9 +10,8 @@ function [ mtOut, mzOut  ] = Copy_of_bloch(dt,dB0,B1,T1,T2,mt,mz) %1sec
    mzOut = mzOut + sin(gamma*dt*imag(B1)).*real(mt) - sin(gamma*dt*real(B1)).*imag(mt);
    
    %apply B0:
-   for idx = 1:size(dB0,1)
-    mtOut(idx,:,:) = squeeze(mtOut(idx,:,:)).*exp(1i*gamma*dt*dB0(idx,:));
-   end
+   mtOut = mtOut.*exp(1i*gamma*dt*dB0);
+   
    
 %    %apply relaxation: 
 %    mtOut = mtOut.*exp(-dt./T2);

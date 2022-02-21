@@ -33,7 +33,7 @@ pulsedurR = 0.001; %s
 result_struct = MRI_Sequence(pulsedurE, pulsedurR, sdelta, ldelta, G(2), nTimeSteps, dt);
 
 %% %%%%%%%%%%%%% COORDS SETUP %%%%%%%%%%%%%
-rndWalkPathGenerator(nSet,nSpins,constraint_radii,nTimeSteps,result_struct.END_diffusionGradient2_loc,D,dim,dt)
+getRandomWalks(nSet,nSpins,constraint_radii,nTimeSteps,result_struct.END_diffusionGradient2_loc,D,dim,dt)
 
 %% %%%%%%%%%%%%% Perform sequence %%%%%%%%% 
 store_final_vect = zeros(nSet,length(b),length(constraint_radii));
@@ -44,20 +44,20 @@ rfPulse = result_struct.rfPulse;
 gradAmp = result_struct.gradAmp;
 
 tic
-for SpinSet = 1:nSet
+for batch = 1:nSet
     
-    fprintf("\n\n Set %d/%d \n\n",SpinSet,nSet);
+    fprintf("\n\n Set %d/%d \n\n",batch,nSet);
     file_path = "3D_Coords/Coords";%3D_Coords/Coords
-    load(sprintf("%s%d.mat",file_path,SpinSet));
+    load(sprintf("%s%d.mat",file_path,batch));
  
     for radius_bounds = 1:length(constraint_radii)
         disp("Starting sequence");
         spinLocs = squeeze(Coords(radius_bounds,:,:,:));
        
-        mFinalVect = GVec_simulateMRISequence(G,gradAmp,rfPulse,T1,T2,diffusionGradient1_loc,diffusionGradient2_loc,spinLocs,nSpins,dt);
+        mFinalVect = getGVecMRISeq(G,gradAmp,rfPulse,T1,T2,diffusionGradient1_loc,diffusionGradient2_loc,spinLocs,nSpins,dt);
         disp(['b-value = ' num2str(round(b(1:nG)))]);
 
-        store_final_vect(SpinSet,:,radius_bounds) = (mFinalVect(:,1));
+        store_final_vect(batch,:,radius_bounds) = (mFinalVect(:,1));
     end
         
 end

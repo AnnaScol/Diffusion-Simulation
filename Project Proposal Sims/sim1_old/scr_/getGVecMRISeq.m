@@ -1,10 +1,10 @@
-function result = GVec_simulateMRISequence(G,gradAmp,rfPulse,T1,T2,dG1_loc,dG2_loc,Spin_locs,nSpins,dt)
+function result = getGVecMRISeq(G,gradAmp,rfPulse,T1,T2,dG1_loc,dG2_loc,Spin_locs,nSpins,dt)
 
-    vec_GradAmp = zeros(length(G),3,1,size(gradAmp,2));
+    vec_GradAmp = zeros(length(G),3,500,size(gradAmp,2));
     
     idx = 1:length(G);
-    vec_GradAmp(idx,3,:,dG1_loc) = G(idx)' .* ones(24,length(dG1_loc));
-    vec_GradAmp(idx,3,:,dG2_loc) = G(idx)' .* ones(24,length(dG2_loc));
+    vec_GradAmp(idx,3,:,dG1_loc) = G(idx)' .* ones(24,1,500,length(dG1_loc));
+    vec_GradAmp(idx,3,:,dG2_loc) = G(idx)' .* ones(24,1,500,length(dG2_loc));
     
     mT = zeros(length(G),3,nSpins);
     mZ = ones(length(G), 3,nSpins);
@@ -30,13 +30,17 @@ function result = GVec_simulateMRISequence(G,gradAmp,rfPulse,T1,T2,dG1_loc,dG2_l
 
 %         dB0 = vec_GradAmp(:,:,:,j)'*squeeze(newSpin_locs(:,:,:,j)); 
         
-        dB0 = pagemtimes(vec_GradAmp(:,:,1,j)',squeeze(newSpin_locs(:,:,:,j)));
+%         dB0 = pagemtimes(vec_GradAmp(:,:,1,j)',squeeze(newSpin_locs(:,:,:,j)));
+
+         for idx = 1:length(G) %this dB0 should be 24x500
+             dB0(idx,:) = vec_GradAmp(idx,:,:,j)*squeeze(newSpin_locs(idx,:,:,j));
+         end
                           
-        [mT,mZ] =  bloch(dt,dB0,rfPulse(j),T1,T2,mT,mZ); 
+        [mT,mZ] =  Copy_of_bloch(dt,dB0,rfPulse(j),T1,T2,mT,mZ); 
 
         % condition is true if it has reached the read point
         if (j > (dG2_loc(end)-1))
-            result = [mean(mT,'all'), mean(mZ,'all')];  
+            result = [squeeze(mean(mean(mT,2),3)), squeeze(mean(mean(mZ,2),3))];  
             break;
         end
         j = j + 1;

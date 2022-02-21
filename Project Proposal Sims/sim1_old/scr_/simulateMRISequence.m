@@ -6,21 +6,10 @@ function result = simulateMRISequence(G,gradAmp,rfPulse,T1,T2,dG1_loc,dG2_loc,Sp
     mT = zeros(3,nSpins);
     mZ = ones(3,nSpins);
 
-    %starting spin locations
-%     [mT,mZ] =  bloch(dt,([(Spin_locs(1,:,1)),...
-%                           (Spin_locs(2,:,1)), ...
-%                           (Spin_locs(3,:,1))]'),0,T1,T2,mT,mZ); 
     [mT,mZ] =  bloch(dt,Spin_locs(:,:,1),0,T1,T2,mT,mZ); 
 
-%     for j = 2:nTimeSteps
     j = 2;    
     while(1)
-        
-
-%         dB0 = gradAmp(:,j)'*([(Spin_locs(1,:,j)),...
-%                               (Spin_locs(2,:,j)), ...
-%                               (Spin_locs(3,:,j))]'); 
-
         dB0 = gradAmp(:,j)'*Spin_locs(:,:,j); 
                           
         [mT,mZ] =  bloch(dt,dB0,rfPulse(j),T1,T2,mT,mZ); 

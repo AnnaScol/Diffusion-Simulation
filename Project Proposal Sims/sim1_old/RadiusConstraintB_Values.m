@@ -1,8 +1,8 @@
 clear all; clc; close all; % clean up
 
 % Diffusion Gradients
-ldelta = 0.004; %ms was 0.011
-sdelta = 0.002; %ms was 0.002
+ldelta = 0.04; %ms was 0.011
+sdelta = 0.010; %ms was 0.002
 
 % Parameters 
 dt     = 1*10^-6; 
@@ -13,7 +13,7 @@ T2     = 1000*(10^-3);
 TE     = 20*(10^-3);
 
 nSpins      = 500;
-nSet        = 1;
+nSet        = 2;
 dim         = 3; %dimensions in random walk
 
 %Allocate the memory needed
@@ -22,18 +22,21 @@ rfPulse     = zeros(1,nTimeSteps); %variable to hold a RF waveform
 gradAmp     = zeros(3,nTimeSteps); %variable to hold a gradient waveform
 
 % Generate gradient amplitude from a set of b (s/mm^2) values 
-b = [0 50 100 150 200 250 300 400 500 750 1000 1250 1500 1750 2000 2500 3000 4000 5000 6000 7000 8000 9000 10000]; % s/mm^2
+b = [0 50 150 200 500 750 1000 1500 2000 3000 4000 5000 7000 8000 10000 12000 15000 20000]; % s/mm^2
 G = findGValues((b/1e-6),gamma,ldelta,sdelta);
 nG = length(G);
 
-constraint_radii = ([2 3 4 4.5 5 6 8 10]*1e-6); 
+constraint_radii = ([4 5 6 10]*1e-6); 
 %% %%%%%%%%%%%%% CHECK SEQUENCE %%%%%%%%%%%%%
 pulsedurE = 0.001; %s
 pulsedurR = 0.001; %s
-result_struct = MRI_Sequence(pulsedurE, pulsedurR, sdelta, ldelta, G(2), nTimeSteps, dt);
 
+tic
+result_struct = MRI_Sequence(pulsedurE, pulsedurR, sdelta, ldelta, G(2), nTimeSteps, dt);
+dispSequence(result_struct.gradAmp,result_struct.rfPulse)
+toc
 %% %%%%%%%%%%%%% COORDS SETUP %%%%%%%%%%%%%
-rndWalkPathGenerator(nSet,nSpins,constraint_radii,nTimeSteps,result_struct.END_diffusionGradient2_loc,D,dim,dt)
+getRandomWalks(nSet,nSpins,constraint_radii,nTimeSteps,result_struct.END_diffusionGradient2_loc,D,dim,dt)
 
 %% %%%%%%%%%%%%% Perform sequence %%%%%%%%% 
 store_final_vect = zeros(nSet,length(b),length(constraint_radii));
@@ -44,11 +47,11 @@ rfPulse = result_struct.rfPulse;
 gradAmp = result_struct.gradAmp;
 
 tic
-for SpinSet = 1:nSet
+for batch = 1:nSet
     
-    fprintf("\n\n Set %d/%d \n\n",SpinSet,nSet);
+    fprintf("\n\n Set %d/%d \n\n",batch,nSet);
     file_path = "3D_Coords/Coords";%3D_Coords/Coords
-    load(sprintf("%s%d.mat",file_path,SpinSet));
+    load(sprintf("%s%d.mat",file_path,batch));
  
     for radius_bounds = 1:length(constraint_radii)
         disp("Starting sequence");
@@ -60,7 +63,7 @@ for SpinSet = 1:nSet
             
         end
         
-        store_final_vect(SpinSet,:,radius_bounds) = (mFinalVect(:,1));
+        store_final_vect(batch,:,radius_bounds) = (mFinalVect(:,1));
     end
         
 end
@@ -74,4 +77,4 @@ str = sprintf("averaged_%dx%dSpins.mat",nSet,nSpins);
 save(sprintf('mat_store/%s',str),'final_res');
 %% Plot the results
 nFig = 4;
-plot_signal_vs_b_results(length(constraint_radii), final_res, b, nFig)
+plot_signal_vs_b_results(length(constraint_radii), final_res, b/1.0e-6, nFig)

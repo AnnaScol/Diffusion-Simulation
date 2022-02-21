@@ -1,4 +1,4 @@
-function rndWalkPathGenerator(nSet,nSpins,Vradius,nTimeSteps,diffusionGradient2_loc,D,n,dt)
+function getRandomWalks(nSet,nSpins,Vradius,nTimeSteps,diffusionGradient2_loc,D,n,dt)
     %%%%%%%%%%%%% COORDS SETUP %%%%%%%%%%%%%
     Coords = zeros(length(Vradius),3,nSpins,nTimeSteps); %particle start loc is assume 0,0,0
 
@@ -13,20 +13,18 @@ function rndWalkPathGenerator(nSet,nSpins,Vradius,nTimeSteps,diffusionGradient2_
             Coords(radius_bounds,1,:, j) = r(1,:)';
             Coords(radius_bounds,2,:, j) = r(2,:)';
             Coords(radius_bounds,3,:, j) = r(3,:)';
-
+            %dxdydz step distributions
+            sd__ = 0.58;%sqrt(STOP_TIME/numberOfSteps);
+            rnd_x = sd__.*randn(length(2:nTimeSteps),nSpins)*sqrt(2*n*D*dt);
+            rnd_y = sd__.*randn(length(2:nTimeSteps),nSpins)*sqrt(2*n*D*dt);
+            rnd_z = sd__.*randn(length(2:nTimeSteps),nSpins)*sqrt(2*n*D*dt);
+                    
                 for j = 2:nTimeSteps   
-
-                    %dxdydz step distributions
-                    sd__ = 0.58;%sqrt(STOP_TIME/numberOfSteps);
-                    rnd_x = sd__.*randn(1,nSpins)*sqrt(2*n*D*dt);
-                    rnd_y = sd__.*randn(1,nSpins)*sqrt(2*n*D*dt);
-                    rnd_z = sd__.*randn(1,nSpins)*sqrt(2*n*D*dt);
-
-
-                    temp_r = r + [rnd_x;rnd_y;rnd_z]; %adding the step
+                    
+                    temp_r = r + [rnd_x(j,:);rnd_y(j,:);rnd_z(j,:)]; %adding the step
 
                     %%% Bounds checking %%%
-                    r = InBounds(Vradius(radius_bounds),temp_r(1,:),temp_r(2,:),temp_r(3,:),rnd_x,rnd_y,rnd_z);
+                    r = InBounds(Vradius(radius_bounds),temp_r(1,:),temp_r(2,:),temp_r(3,:),rnd_x(j,:),rnd_y(j,:),rnd_z(j,:));
 
                     Coords(radius_bounds,1,:, j) = r(1,:)';
                     Coords(radius_bounds,2,:, j) = r(2,:)';
@@ -39,26 +37,7 @@ function rndWalkPathGenerator(nSet,nSpins,Vradius,nTimeSteps,diffusionGradient2_
 
                 end
 
-     %% Plot of final distribution %%%
-%             figure; 
-%     
-%             for particle = 1:nSpins
-%                 x_ = squeeze(Coords(radius_bounds,1,particle,1:diffusionGradient2_loc(end)));
-%                 y_ = squeeze(Coords(radius_bounds,2,particle,1:diffusionGradient2_loc(end)));
-%                 z_ = squeeze(Coords(radius_bounds,3,particle,1:diffusionGradient2_loc(end)));
-%                 
-%                 plot3(x_, y_, z_, 'Color', rand(1,3), 'MarkerSize', 9);
-%                 xlabel('x'), ylabel('y'),zlabel('z');
-%                 hold on; 
-%             end
-%             hold off
-%             pause;
-
         end %end of one radius cycle value
-
-% Folder = cd;
-% Folder = fullfile(Folder, '..');
-% save(fullfile(Folder, 'FileName.mat'))
         
         folder = cd;
         
@@ -148,9 +127,6 @@ function result = InBounds(r,x1,y1,z1,dx,dy,dz)
                 index_list_update = find((mag < r) > 0); 
                 if (max(index_list_update)>0)
                     result(:,index_list_(index_list_update)) = test_res(:,(index_list_update));
-%                     x1(index_list_(index_list_update)) = test_res(1,(index_list_update)); 
-%                     y1(index_list_(index_list_update)) = test_res(2,(index_list_update)); 
-%                     z1(index_list_(index_list_update)) = test_res(3,(index_list_update));
                 end
                 
                 %if no values are above r, then continue code
@@ -163,6 +139,7 @@ function result = InBounds(r,x1,y1,z1,dx,dy,dz)
         end % end of while
     end % end of (temp == 1)
 end
+
 
 
 function point_in_sphere = StartingPos(radius,nSpins)
@@ -180,24 +157,25 @@ function point_in_sphere = StartingPos(radius,nSpins)
     point_in_sphere = [x';...
                        y';...
                        z'];
-%     figure;               
-%     plot3(x,y,z,'.');
-%     xlabel('x'), ylabel('y'),zlabel('z');
-
 end
 
 
-%Draws the plot for the particles trajetories 
-function DrawParticleGraph(xCoords,yCoords,zCoords,nSpins,fig_num)
-    figure(fig_num)
-    for spin = 1:nSpins
-        plot3(xCoords(spin,:),yCoords(spin,:),zCoords(spin,:),'Color', rand(1,3), 'MarkerSize', 9);
+%%% Plot of final distribution %%%
+function DrawParticleGraph(x_,y_,z_,nSpins)
+
+    figure; 
+
+    for particle = 1:nSpins
+        x_ = squeeze(Coords(radius_bounds,1,particle,1:diffusionGradient2_loc(end)));
+        y_ = squeeze(Coords(radius_bounds,2,particle,1:diffusionGradient2_loc(end)));
+        z_ = squeeze(Coords(radius_bounds,3,particle,1:diffusionGradient2_loc(end)));
+
+        plot3(x_, y_, z_, 'Color', rand(1,3), 'MarkerSize', 9);
+        xlabel('x'), ylabel('y'),zlabel('z');
         hold on; 
     end
-    xlabel('x'), ylabel('y'),zlabel('z');
-    title('Final location of particle')
-    drawnow;
+    hold off
+    pause;
 end
-
 
 

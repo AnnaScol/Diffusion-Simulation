@@ -3,7 +3,7 @@ clear all; clc; close all; % clean up
 
 num_particle      = 500; 
 START_TIME        = 0; %sec
-STOP_TIME         = 0.05; %sec
+STOP_TIME         = 0.0805; %sec
 movements_per_sec = 1000000;
 dt = (STOP_TIME-START_TIME)/movements_per_sec;
 t = movements_per_sec*dt;
@@ -24,8 +24,8 @@ zCoords = zeros(numberOfSteps,num_particle); %particle start loc is assume 0,0
 
 for radius = 1:length(radii)
     fprintf("RADIUS %d/%d\n",radius,length(radii));
-%     sd__ = 1.85;%sqrt(STOP_TIME/numberOfSteps);
-    sd__ = 0.58;%sqrt(STOP_TIME/numberOfSteps); was 0.58
+    sd__ = sqrt(STOP_TIME/numberOfSteps/n);% 1.85;%sqrt(STOP_TIME/numberOfSteps);
+%     sd__ = 0.58;%sqrt(STOP_TIME/numberOfSteps); was 0.58
 
     rand_x_steps = sd__.*randn((STOP_TIME-START_TIME)*movements_per_sec,num_particle)*sqrt(2*n*D*dt);
     rand_y_steps = sd__.*randn((STOP_TIME-START_TIME)*movements_per_sec,num_particle)*sqrt(2*n*D*dt);
@@ -65,15 +65,15 @@ for radius = 1:length(radii)
 
     %% Plotting avg walk for particles
 
-    figure; hold on
-    
-    for particle = 1:num_particle
-        plot3(xCoords(:,particle),yCoords(:,particle),zCoords(:,particle),'Color', rand(1,3), 'MarkerSize', 9);
-        hold on; 
-    end
-    xlabel('x'), ylabel('y'),zlabel('z');
-    hold off
-   
+%     figure; hold on
+%     
+%     for particle = 1:num_particle
+%         plot3(xCoords(:,particle),yCoords(:,particle),zCoords(:,particle),'Color', rand(1,3), 'MarkerSize', 9);
+%         hold on; 
+%     end
+%     xlabel('x'), ylabel('y'),zlabel('z');
+%     hold off
+%    
     
 % 
     % Calculate the distance from the origin.
@@ -101,10 +101,10 @@ for radius = 1:length(radii)
                       
                       
     MSD(1,radius) = mean(dr_squared);
-%     D_vec(1,radius) = (MSD(radius)/(2*n*dt))*(1/t); WHAT IS CHANGED
+    D_vec(1,radius) = (MSD(radius)/(2*n*dt))*(1/t); %WHAT IS CHANGED
 %     D_vec(1,radius) = MSD(radius)/(2*n*t)*(1/(STOP_TIME-START_TIME));
-    D_vec(1,radius) = MSD(radius)/(2*n*numberOfSteps*dt);%*(1/(STOP_TIME-START_TIME));
-
+%     D_vec(1,radius) = MSD(radius)/(2*n*numberOfSteps*dt);%*(1/(STOP_TIME-START_TIME));
+% 
 
 
     disp(D_vec);

@@ -5,11 +5,9 @@ function coords = getRandomWalks(D,cellRadius,nSpins,nTimeSteps,dt)
   fubar  = 0.0;
   
   %% usefull constrants
-  sd__   = 0.58;                  %sqrt(STOP_TIME/numberOfSteps);
+  sd__   = 1;                  %sqrt(STOP_TIME/numberOfSteps); 5.7735e-04;%
   nD     = 3;                     % We allways have 3D in this program
   DConst = sqrt(2*nD*D*dt)*sd__;  %tuned parameter to obtain the correct
-  cellRS = cellRadius^2;
-
   esc    = 0; % max number or tries
 
   coords(:,:,1) = getStartPos(cellRadius,nSpins);
@@ -44,7 +42,7 @@ function coords = getRandomWalks(D,cellRadius,nSpins,nTimeSteps,dt)
     end
 
     
-%          %% Plot of final distribution %%%
+         %% Plot of final distribution %%%
 %             figure(99);hold off 
 %     
 %             for particle = 1:nSpins

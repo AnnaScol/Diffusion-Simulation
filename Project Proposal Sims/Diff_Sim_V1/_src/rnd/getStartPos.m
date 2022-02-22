@@ -6,9 +6,7 @@ function pos = getStartPos(radius,nSpins)
     
     pos = pos(:,r);
     
-    pos = 0.999*radius*pos(:,1:nSpins);
-    disp(size(pos));
-            
+    pos = 0.999*radius*pos(:,1:nSpins);            
 %      figure; histogram(sqrt(dot(pos,pos,1)), 50); % should look exponential towwaars the egde
 
 end

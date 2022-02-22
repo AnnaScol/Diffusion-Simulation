@@ -31,14 +31,14 @@ function getRandomWalks(nSet,nSpins,Vradius,nTimeSteps,diffusionGradient2_loc,D,
                     Coords(radius_bounds,3,:, j) = r(3,:)';
 
                     % condition is true if it has reached the read point
-                    if (j > diffusionGradient2_loc(end))
+                    if (j > diffusionGradient2_loc(end)-1)
                         break;
                     end
 
                 end
 
         end %end of one radius cycle value
-        
+%         DrawParticleGraph(Coords,radius_bounds,diffusionGradient2_loc,nSpins);
         folder = cd;
         
         file_path = sprintf("%s/3D_Coords/Coords",folder); %         save(sprintf('3D_Coords/Coords%d.mat',set),'Coords');
@@ -161,7 +161,7 @@ end
 
 
 %%% Plot of final distribution %%%
-function DrawParticleGraph(x_,y_,z_,nSpins)
+function DrawParticleGraph(Coords,radius_bounds,diffusionGradient2_loc,nSpins)
 
     figure; 
 
@@ -175,7 +175,6 @@ function DrawParticleGraph(x_,y_,z_,nSpins)
         hold on; 
     end
     hold off
-    pause;
 end
 
 

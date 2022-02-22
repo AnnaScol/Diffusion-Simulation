@@ -3,8 +3,8 @@ function result = simulateMRISequence(G,gradAmp,rfPulse,T1,T2,dG1_loc,dG2_loc,Sp
     gradAmp(3,dG1_loc) =  G; %Z gradients in Tesla per meter
     gradAmp(3,dG2_loc) =  G; %Z gradients in Tesla per meter
 
-    mT = zeros(3,nSpins);
-    mZ = ones(3,nSpins);
+    mT = zeros(1,nSpins);
+    mZ = ones(1,nSpins);
 
     [mT,mZ] =  bloch(dt,Spin_locs(:,:,1),0,T1,T2,mT,mZ); 
 

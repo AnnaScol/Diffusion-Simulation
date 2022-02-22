@@ -1,4 +1,4 @@
-function result_struct = MRI_Sequence(pulsedurE, pulsedurR, sdelta, bdelta, G, nTimesteps, dt)
+function result_struct = MRI_Sequence(pulsedurE, pulsedurR, sdelta, bdelta, G, dt)
 % resulting struct contains gradient amplitudes and rf pulse for sequence
         
     % Generate and Display MRI Sequence

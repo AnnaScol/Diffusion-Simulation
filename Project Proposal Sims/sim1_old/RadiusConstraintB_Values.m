@@ -13,13 +13,11 @@ T2     = 1000*(10^-3);
 TE     = 20*(10^-3);
 
 nSpins      = 500;
-nSet        = 2;
+nSet        = 1;
 dim         = 3; %dimensions in random walk
 
 %Allocate the memory needed
 nTimeSteps  = round(ldelta/dt + 2*sdelta/dt)+10;%70ms
-rfPulse     = zeros(1,nTimeSteps); %variable to hold a RF waveform
-gradAmp     = zeros(3,nTimeSteps); %variable to hold a gradient waveform
 
 % Generate gradient amplitude from a set of b (s/mm^2) values 
 b = [0 50 150 200 500 750 1000 1500 2000 3000 4000 5000 7000 8000 10000 12000 15000 20000]; % s/mm^2
@@ -32,7 +30,7 @@ pulsedurE = 0.001; %s
 pulsedurR = 0.001; %s
 
 tic
-result_struct = MRI_Sequence(pulsedurE, pulsedurR, sdelta, ldelta, G(2), nTimeSteps, dt);
+result_struct = MRI_Sequence(pulsedurE, pulsedurR, sdelta, ldelta, G(2), dt);
 dispSequence(result_struct.gradAmp,result_struct.rfPulse)
 toc
 %% %%%%%%%%%%%%% COORDS SETUP %%%%%%%%%%%%%
@@ -69,12 +67,12 @@ for batch = 1:nSet
 end
 toc
 
-str = sprintf("raw_%dx%dSpins_vec.mat",nSet,nSpins);
-save(sprintf('mat_store/%s.mat', str),'store_final_vect');
+% str = sprintf("raw_%dx%dSpins_vec.mat",nSet,nSpins);
+% save(sprintf('mat_store/%s.mat', str),'store_final_vect');
 %% Sum all results 
 final_res = squeeze(sum((store_final_vect),1)./nSet);
-str = sprintf("averaged_%dx%dSpins.mat",nSet,nSpins);
-save(sprintf('mat_store/%s',str),'final_res');
+% str = sprintf("averaged_%dx%dSpins.mat",nSet,nSpins);
+% save(sprintf('mat_store/%s',str),'final_res');
 %% Plot the results
 nFig = 4;
 plot_signal_vs_b_results(length(constraint_radii), final_res, b/1.0e-6, nFig)

@@ -7,7 +7,7 @@ function coords = getRndWalks(D,cellRadius,nSpins,nTimeSteps,dt)
   DConst = sqrt(2*D*dt);  %tuned parameter to obtain the correct mult by 2 to make 
   radius_mag = cellRadius^2;
 
-  coords(:,:,1) = zeros(3,nSpins);
+  coords(:,:,1) = getStartPos(cellRadius,nSpins);
  
 
     for ii = 2:nTimeSteps   
@@ -29,15 +29,15 @@ function coords = getRndWalks(D,cellRadius,nSpins,nTimeSteps,dt)
                 point_of_intersection = vectorSphereIntersection(cellRadius, coords(:,collision_idx(collision),ii-1),trajectory);
                 
                 overshoot = coords(:,collision_idx(collision),ii)-point_of_intersection;
-                perc_moved = dot(overshoot,overshoot)/dot(trajectory,trajectory);
-                
-                
-                new_coord = reflectedPoint(point_of_intersection, coords(:,collision_idx(collision),ii-1));
-                coords(:,collision_idx(collision),ii) = point_of_intersection - perc_moved*trajectory;
-                
+                perc_moved = dot(trajectory,overshoot);
+               
+                new_coord = point_of_intersection - perc_moved*trajectory;
+                coords(:,collision_idx(collision),ii) = reflectedPoint(point_of_intersection, new_coord);
+
                 if dot( coords(:,collision_idx(collision),ii), coords(:,collision_idx(collision),ii)) > (cellRadius^2)
-                    fprintf("%d\n\n", dot( coords(:,collision_idx(collision),ii), coords(:,collision_idx(collision),ii)));
+                    fprintf("%d %d\n\n", dot( coords(:,collision_idx(collision),ii), coords(:,collision_idx(collision),ii)),perc_moved);
                 end
+                
             end
             
         end
@@ -45,9 +45,8 @@ function coords = getRndWalks(D,cellRadius,nSpins,nTimeSteps,dt)
         
         
     end
-
-    
- % Plot of final distribution %%%
+   
+% %  Plot of final distribution %%%
 %     figure(99);hold off 
 % 
 %     for particle = 1:nSpins
@@ -60,5 +59,5 @@ function coords = getRndWalks(D,cellRadius,nSpins,nTimeSteps,dt)
 %         hold on; 
 %     end
 %     hold off
-    
+%     
 end

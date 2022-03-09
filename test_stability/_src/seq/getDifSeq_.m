@@ -23,14 +23,14 @@ function result_struct = getDifSeq(pulsedurE, pulsedurR, TE, sDelta, lDelta, bVa
     refPulseEndTime = refPulseStaTime + rfStepsR -1;
     
     % prepare final RF time series
-    result_struct.RF(1,              1:       rfStepsE)        = rfPulseE;
-    result_struct.RF(1,round(refPulseStaTime:refPulseEndTime)) = rfPulseR;
+    result_struct.RF(1,              1:       rfStepsE) = rfPulseE;
+    result_struct.RF(1,refPulseStaTime:refPulseEndTime) = rfPulseR;
     
     %%% Diffusion Pulses %%%
     
     % get gradient amplitude
-    DifGradAmp = findGValues((bVal),lDelta,sDelta);
-%     fprintf("Gamp %d\n",DifGradAmp);
+    DifGradAmp = findGValues((bVal/1e-6),lDelta,sDelta);
+    disp(DifGradAmp);
     nGradSteps = round(sDelta/dt);
     
     % get second gradient start and end time
@@ -41,7 +41,7 @@ function result_struct = getDifSeq(pulsedurE, pulsedurR, TE, sDelta, lDelta, bVa
   
     
     % prepare final grad time series
-    result_struct.G(3,round(firGradStartTime:(firGradStartTime+nGradSteps-1))) = DifGradAmp;
-    result_struct.G(3,round(secGradStartTime:(secGradStartTime+nGradSteps-1))) = DifGradAmp;
+    result_struct.G(3,firGradStartTime:(firGradStartTime+nGradSteps-1)) = DifGradAmp;
+    result_struct.G(3,secGradStartTime:(secGradStartTime+nGradSteps-1)) = DifGradAmp;
  
 end

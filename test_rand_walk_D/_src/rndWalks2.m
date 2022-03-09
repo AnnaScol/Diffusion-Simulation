@@ -3,8 +3,7 @@ function coords = rndWalks2(D,nSpins,nTimeSteps,dt)
   coords = zeros(3,nSpins,nTimeSteps);  
   %% usefull constrants
 %   DConst = sqrt(2*D*dt);  %dt is 1.0e-6
-  l = sqrt(2*D*3*0.01)% sqrt(2*D*0.001);
-% predMean = sqrt(2*D*3*duration);
+  l = sqrt(6*((D*0.01)/10000));% sqrt(6*(d*simDuration)/simTimesteps);
   coords(:,:,1) = zeros(3,nSpins);
 
     for ii = 2:nTimeSteps   

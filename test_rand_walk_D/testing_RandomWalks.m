@@ -2,7 +2,7 @@ clear all; close all; % clean up
 addpath(genpath('./_src'));
 
 % Simulation parameter
-nSpins            = 5000;
+nSpins            = 100;
 duration          = 10.0e-3; %s
 movements_per_sec = 1.0e6;   %1um steps
 nTimeSteps     = duration*movements_per_sec;
@@ -13,8 +13,11 @@ D  = 3.0e-9; %free water
 nD = 3;
 
 %%%%%%%%%%% % TEST WALKS %%%%%%%%%%%%%
-% coords = rndWalks1(D,nSpins,nTimeSteps,dt); %constant time, distance from distribution
-coords = rndWalks2(D,nSpins,nTimeSteps,dt); %constant length normalized from normal distribution
+% rndWalks1 is twice as fast as rndWalks2
+% for 100 spins, averaged over 100 iterations rndWalks1 = 0.06s and rndWalks 2 = 0.12s
+
+coords = rndWalks1(D,nSpins,nTimeSteps,dt); %constant time, distance from distribution
+% coords = rndWalks2(D,nSpins,nTimeSteps,dt); %constant length normalized from normal distribution
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

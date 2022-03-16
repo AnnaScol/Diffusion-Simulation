@@ -2,24 +2,23 @@ clear all; clc; close all; % clean up
 addpath(genpath('./_src'));
 
 % Sim Parameters
-dt     = 1.0e-6;        % s
-nSpins = 1000;
-nSet   = 100;
+dt     = 10.0e-6;  % s
+nSpins = 10000;
+nSet   = 5;
 
 
 % Seq Parameters 
 pulsedurE = 0.001; %s
 pulsedurR = 0.001; %s
-TE     = 20.0e-3;       % s
-ldelta = 10e-3;        % s was 0.011
-sdelta = 5.0e-3;        % s was 0.002
+TE     = 55.0e-3;  % s
+ldelta = 10e-3;    % s was 0.011
+sdelta = 5.0e-3;   % s was 0.002
 bVal   = [0,100,200,300,500,600,750,1000,1500,2000,3000,4000,5000,6000,7000,8000,10000,12500,15000,20000]; %s/mm^2
-% bVal = 1000;%s/mm^2
 
 % Tissue Paramaters
-T1     = 1.5;           % s  (not used)
-T2     = 1.0;           % s  (not used)
-D      = 3.0e-9;        % m^2/s
+T1     = 1.5;      % s  (not used)
+T2     = 1.0;      % s  (not used)
+D      = 3.0e-9;   % m^2/s
 Radii = [3.5e-6,4.0e-6,5.0e-6,8.0e-6];        % s/m
 % Radii = [8.0e-6];        % s/m
 
@@ -40,8 +39,8 @@ for iSet = 1:nSet
             %check b-result
             
             %% %%%%%%%%%%%%% CHECK SEQUENCE %%%%%%%%%%%%%
-            %dispSequence(Sequence_Struct);
-            
+%             dispSequence(Sequence_Struct);
+             
             %% %%%%%%%%%%%%% Perform sequence %%%%%%%%%%%
             res(iSet,bIdx,rIdx) = simulateMRISequence(Sequence_Struct,T1,T2,spinCor,dt);
             
@@ -55,6 +54,3 @@ final_res = squeeze(sum(res,1)./nSet);
 plot_signal_vs_b_results(final_res, bVal);
 
 %%
-plot_signal_vs_b_results(((one.final_res+two.final_res)/2), bVal);
-plot_signal_vs_b_results(((one.final_res(14:end,:)+two.final_res(14:end,:))/2), bVal(14:end));
-mean(((one.final_res(14:end,:)+two.final_res(14:end,:))/2))

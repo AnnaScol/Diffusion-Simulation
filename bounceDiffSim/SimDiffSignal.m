@@ -2,16 +2,16 @@ clear all; clc; close all; % clean up
 addpath(genpath('./_src'));
 
 % Sim Parameters
-dt     = 1.0e-6;        % s
-nSpins = 2000;
-nSet   = 50;
+dt     = 20.0e-6;        % s
+nSpins = 10000;
+nSet   = 5;
 
 
 % Seq Parameters 
 pulsedurE = 0.001; %s
 pulsedurR = 0.001; %s
-TE     = 20.0e-3;       % s
-ldelta = 10e-3;        % s was 0.011
+TE     = 55.0e-3;       % s
+ldelta = 25e-3;        % s was 0.011
 sdelta = 5.0e-3;        % s was 0.002
 bVal   = [0,100,200,300,500,600,750,1000,1500,2000,3000,4000,5000,6000,7000,8000,10000,12500,15000,20000]; %s/mm^2
 % bVal = 1000;%s/mm^2

@@ -4,6 +4,6 @@ function plot_analysis(final_results, b)
         plot(b,abs(final_results(:,ii)),'.-','LineWidth',2);
         xlabel('b (s/mm^2)'), ylabel('|M_{xy}|');grid on;
     end
-    legend("2.5*1e-6","3.5*1e-6","4*1e-6","5*1e-6")
+    legend("3.5*1e-6","4*1e-6","5*1e-6","8*1e-6")
     hold off;
 end

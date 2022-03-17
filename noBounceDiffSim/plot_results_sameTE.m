@@ -12,16 +12,16 @@ d10 = load(sprintf('%s/final_res_Delta_10_50000spin.mat',folder_path)).final_res
 
 figure(1);
 subplot(2,4,1);plot_analysis(d25, bVal);
-title('Delta = 25ms');
+title('Delta = 25ms, dt = 10ms');
 
 subplot(2,4,2);plot_analysis(d20, bVal);
-title('Delta = 20ms');
+title('Delta = 20ms, dt = 10ms');
 
 subplot(2,4,3);plot_analysis(d15, bVal);
-title('Delta = 15ms');
+title('Delta = 15ms, dt = 10ms');
 
 subplot(2,4,4);plot_analysis(d10, bVal);
-title('Delta = 10ms');
+title('Delta = 10ms, dt = 10ms');
 
 %% Find coefficient of variation between data
 mean_sig = mean(cat(3,d25,d20,d15,d10),3);
@@ -32,19 +32,23 @@ coefVar = coefVar./max(coefVar);
 
 subplot(2,4,5); 
 errorbar(bVal,abs(coefVar(:,1)),std_sig(:,1),'k.-'); 
-xlabel('b (s/mm^2)'), ylabel('2.5 Normalised Coefficient of Variations');grid on;
+xlabel('b (s/mm^2)'), ylabel('2.5 Norm Coefficient of Var.');grid on;
+title("Var between \Delta 's, R = 3.5um");
 
 subplot(2,4,6); 
 errorbar(bVal,abs(coefVar(:,2)),std_sig(:,2),'k.-'); hold on;
-xlabel('b (s/mm^2)'), ylabel('3.5 Normalised Coefficient of Variations');grid on;
+xlabel('b (s/mm^2)'), ylabel('Norm Coefficient of Var.');grid on;
+title("Var between \Delta 's, R = 4um");
 
 subplot(2,4,7); 
 errorbar(bVal,abs(coefVar(:,3)),std_sig(:,3),'k.-'); hold on;
-xlabel('b (s/mm^2)'), ylabel('4 Normalised Coefficient of Variations');grid on;
+xlabel('b (s/mm^2)'), ylabel('Norm Coefficient of Var.');grid on;
+title("Var between \Delta 's, R = 5um");
 
 subplot(2,4,8); 
 errorbar(bVal,abs(coefVar(:,4)),std_sig(:,4),'k.-'); hold on;
-xlabel('b (s/mm^2)'), ylabel('5 Normalised Coefficient of Variations');grid on;
+xlabel('b (s/mm^2)'), ylabel('Norm Coefficient of Var.');grid on;
+title("Var between \Delta 's, R = 8um");
 
 %%
 
@@ -56,16 +60,16 @@ d10 = load(sprintf('%s/final_res_Delta_10.mat',folder_path)).final_res;
 
 figure(2);
 subplot(2,4,1);plot_analysis(d25, bVal);
-title('Delta = 25ms');
+title('Delta = 25ms, dt = 20ms');
 
 subplot(2,4,2);plot_analysis(d20, bVal);
-title('Delta = 20ms');
+title('Delta = 20ms, dt = 20ms');
 
 subplot(2,4,3);plot_analysis(d15, bVal);
-title('Delta = 15ms');
+title('Delta = 15ms, dt = 20ms');
 
 subplot(2,4,4);plot_analysis(d10, bVal);
-title('Delta = 10ms');
+title('Delta = 10ms, dt = 20ms');
 
 %% Find coefficient of variation between data
 mean_sig2 = mean(cat(3,d25,d20,d15,d10),3);
@@ -76,69 +80,84 @@ coefVar2 = coefVar2./max(coefVar2);
 
 subplot(2,4,5); 
 errorbar(bVal,abs(coefVar(:,1)),std_sig(:,1),'k.-'); 
-xlabel('b (s/mm^2)'), ylabel('2.5 Normalised Coefficient of Variations');grid on;
+xlabel('b (s/mm^2)'), ylabel('Norm Coefficient of Var.');grid on;
+title("Var between \Delta 's, R = 3.5um");
 
 subplot(2,4,6); 
 errorbar(bVal,abs(coefVar(:,2)),std_sig(:,2),'k.-'); hold on;
-xlabel('b (s/mm^2)'), ylabel('3.5 Normalised Coefficient of Variations');grid on;
+xlabel('b (s/mm^2)'), ylabel('Norm Coefficient of Var.');grid on;
+title("Var between \Delta 's, R = 4um");
 
 subplot(2,4,7); 
 errorbar(bVal,abs(coefVar(:,3)),std_sig(:,3),'k.-'); hold on;
-xlabel('b (s/mm^2)'), ylabel('4 Normalised Coefficient of Variations');grid on;
+xlabel('b (s/mm^2)'), ylabel('Norm Coefficient of Var.');grid on;
+title("Var between \Delta 's, R = 5um");
 
 subplot(2,4,8); 
 errorbar(bVal,abs(coefVar(:,4)),std_sig(:,4),'k.-'); hold on;
-xlabel('b (s/mm^2)'), ylabel('5 Normalised Coefficient of Variations');grid on;
+xlabel('b (s/mm^2)'), ylabel('Norm Coefficient of Var.');grid on;
+title("Var between \Delta 's, R = 8um");
 
 %%
 figure(3)
 
 subplot(3,4,1); 
 errorbar(bVal,abs(coefVar(:,1)),std_sig(:,1),'k.-'); 
-xlabel('b (s/mm^2)'), ylabel('2.5 Normalised CV');grid on;
+xlabel('b (s/mm^2)'), ylabel('Normalised CV');grid on;
+title('R = 3.5um - dt = 10ms');
 
 subplot(3,4,2); 
 errorbar(bVal,abs(coefVar(:,2)),std_sig(:,2),'k.-'); hold on;
-xlabel('b (s/mm^2)'), ylabel('3.5 Normalised CV');grid on;
+xlabel('b (s/mm^2)'), ylabel('Normalised CV');grid on;
+title('R = 4um - dt = 10ms');
 
 subplot(3,4,3); 
 errorbar(bVal,abs(coefVar(:,3)),std_sig(:,3),'k.-'); hold on;
-xlabel('b (s/mm^2)'), ylabel('4 Normalised CV');grid on;
+xlabel('b (s/mm^2)'), ylabel('Normalised CV');grid on;
+title('R = 5um - dt = 10ms');
 
 subplot(3,4,4); 
 errorbar(bVal,abs(coefVar(:,4)),std_sig(:,4),'k.-'); hold on;
-xlabel('b (s/mm^2)'), ylabel('5 Normalised CV');grid on;
-
+xlabel('b (s/mm^2)'), ylabel('Normalised CV');grid on;
+title('R = 8um - dt = 10ms');
 
 subplot(3,4,5); 
 errorbar(bVal,abs(coefVar2(:,1)),std_sig2(:,1),'k.-'); 
-xlabel('b (s/mm^2)'), ylabel('2.5 Normalised CV');grid on;
+xlabel('b (s/mm^2)'), ylabel('Normalised CV');grid on;
+title('R = 3.5um - dt = 20ms');
 
 subplot(3,4,6); 
 errorbar(bVal,abs(coefVar2(:,2)),std_sig2(:,2),'k.-'); hold on;
-xlabel('b (s/mm^2)'), ylabel('3.5 Normalised CV');grid on;
+xlabel('b (s/mm^2)'), ylabel('Normalised CV');grid on;
+title('R = 4um - dt = 20ms');
 
 subplot(3,4,7); 
 errorbar(bVal,abs(coefVar2(:,3)),std_sig2(:,3),'k.-'); hold on;
-xlabel('b (s/mm^2)'), ylabel('4 Normalised CV');grid on;
+xlabel('b (s/mm^2)'), ylabel('Normalised CV');grid on;
+title('R = 5um - dt = 20ms');
 
 subplot(3,4,8); 
 errorbar(bVal,abs(coefVar2(:,4)),std_sig2(:,4),'k.-'); hold on;
-xlabel('b (s/mm^2)'), ylabel('5 Normalised CV');grid on;
+xlabel('b (s/mm^2)'), ylabel('Normalised CV');grid on;
+title('R = 8um - dt = 20ms');
 
 
 subplot(3,4,9); 
 errorbar(bVal,abs(coefVar2(:,1)-coefVar(:,1)),std_sig2(:,1)-std_sig(:,1),'k.-'); 
-xlabel('b (s/mm^2)'), ylabel('2.5 Normalised CV');grid on;
+xlabel('b (s/mm^2)'), ylabel('Normalised CV');grid on;
+title('R = 3.5um Diff');ylim([0 0.008])
 
 subplot(3,4,10); 
 errorbar(bVal,abs(coefVar2(:,2)-coefVar(:,2)),std_sig2(:,2)-std_sig(:,2),'k.-'); hold on;
-xlabel('b (s/mm^2)'), ylabel('3.5 Normalised CV');grid on;
+xlabel('b (s/mm^2)'), ylabel('Normalised CV');grid on;
+title('R = 4um Diff');ylim([0 0.008])
 
 subplot(3,4,11); 
 errorbar(bVal,abs(coefVar2(:,3)-coefVar(:,3)),std_sig2(:,3)-std_sig(:,3),'k.-'); hold on;
-xlabel('b (s/mm^2)'), ylabel('4 Normalised CV');grid on;
+xlabel('b (s/mm^2)'), ylabel('Normalised CV');grid on;
+title('R = 5um Diff'); ylim([0 0.1])
 
 subplot(3,4,12); 
 errorbar(bVal,abs(coefVar2(:,4)-coefVar(:,4)),std_sig2(:,4)-std_sig(:,4),'k.-'); hold on;
-xlabel('b (s/mm^2)'), ylabel('5 Normalised CV');grid on;
+xlabel('b (s/mm^2)'), ylabel('Normalised CV');grid on;
+title('R = 8um Diff');ylim([0 1])

@@ -72,7 +72,7 @@ for test_dt_ind = 1:length(vdt)
             final_res = squeeze(sum(res,1)./nSet);
 %             plot_signal_vs_b_results(final_res, bVal);
 
-            save(sprintf("./_matStoreBounce/averageRes_%d_%d_dt%d",stability_idx,test_idx,test_dt_ind),'final_res');
+%             save(sprintf("./_matStoreBounce/averageRes_%d_%d_dt%d",stability_idx,test_idx,test_dt_ind),'final_res');
         end
     end
 end

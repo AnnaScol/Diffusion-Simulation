@@ -1,4 +1,4 @@
-function pltAnalysis(stdSpinData,testCases,numTrials,criteria)
+function pltAnalysis(stdSpinData,testCases,criteria)
 % plots the coefficient of variation
 
     BVALS = 2;
@@ -18,6 +18,6 @@ function pltAnalysis(stdSpinData,testCases,numTrials,criteria)
     end
 %     set(gca,'xticklabels',{'500', '1000', '2000', '3000', '4000', '5000', '10000', '25000', '50000', '100000'});
     xlabel('nSpins'), ylabel('(Std Dev. |M_{xy}|)/mean(|M_{xy}|)');
-    grid on; title(sprintf('%s - Stability across %d trials for nSpins',criteria,numTrials));
+    grid on; title(sprintf('%s - Stability across 30 trials for nSpins',criteria));
     legend("3.5*10^{-6}","4*10^{-6}","5*10^{-6}","8*10^{-6}")
 end

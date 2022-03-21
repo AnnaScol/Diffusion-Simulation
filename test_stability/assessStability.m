@@ -10,7 +10,7 @@ ldelta = 10e-3;        % s was 0.011
 bVal   = [0,100,200,300,500,600,750,1000,1500,2000,3000,4000,5000,6000,7000,8000,10000,12500,15000,20000]; %s/mm^2
 nbVal  = length(bVal);
 
-numTrials  = 18;
+numTrials  = 30;
 testCases  = [500 1000 2000 3000 4000 5000 10000 25000 50000 100000];
 nCase      = length(testCases);
 
@@ -31,7 +31,7 @@ for stability_idx  = 1:length(testCases)
     for test_idx = 1:numTrials 
 
         %load data for all numTrials, for all nSpin test cases of 20x4
-        allData(test_dt_ind,stability_idx,test_idx,:,:) = load(sprintf("./_matStoreNoBounce/averageRes_%d_%d_dt2",stability_idx,test_idx)).final_res;
+        allData(test_dt_ind,stability_idx,test_idx,:,:) = load(sprintf("./_matStoreBounce/averageRes_%d_%d_dt3",stability_idx,test_idx)).final_res;
 
     end
 
@@ -47,13 +47,13 @@ end %end of test case loop
 
 
 
-save("./dataAnalysis/stdData-NoBounce-dt2",'stdSpinData');
-save("./dataAnalysis/varData-NoBounce-dt2",'varnSpinData');
+save("./dataAnalysis/stdData-Bounce-dt3",'stdSpinData');
+save("./dataAnalysis/varData-Bounce-dt3",'varnSpinData');
 % save("./dataAnalysis/varData-NoBounce-dt1",'varnSpinData');
 
 %% Calculate and plot difference of dt = 1e-5s for bounce, no bounce
 trialsDT1 = 30;
-rows = 2;
+rows = 3;
 
 stdSpinData_NB  = load("./dataAnalysis/stdData-NoBounce-dt1").stdSpinData;
 varnSpinData_NB = load("./dataAnalysis/varData-NoBounce-dt1").varnSpinData;
@@ -65,18 +65,18 @@ diffStdSpinData = stdSpinData_B-stdSpinData_NB;
 diffvarnSpinData = varnSpinData_B-varnSpinData_NB;
 
 figure(1); subplot(rows,3,1); hold on;
-pltAnalysis(stdSpinData_NB,testCases,trialsDT1,"10us - No Bounce")
+pltAnalysis(stdSpinData_NB,testCases,"10us - No Bounce")
 hold off;
 
 subplot(rows,3,2); hold on;
-pltAnalysis(stdSpinData_B,testCases,trialsDT1, "10us - Bounce")
+pltAnalysis(stdSpinData_B,testCases, "10us - Bounce")
 hold off;
 
 subplot(rows,3,3); hold on;
-pltAnalysis(diffStdSpinData,testCases,trialsDT1,"Difference")
+pltAnalysis(diffStdSpinData,testCases,"Difference")
 hold off;
 
-trialsDT2 = 18;
+trialsDT2 = 30;
 stdSpinData_NB  = load("./dataAnalysis/stdData-NoBounce-dt2").stdSpinData;
 varnSpinData_NB = load("./dataAnalysis/varData-NoBounce-dt2").varnSpinData;
 
@@ -86,16 +86,37 @@ varnSpinData_B  = load("./dataAnalysis/varData-Bounce-dt2").varnSpinData;
 diffStdSpinData = stdSpinData_B-stdSpinData_NB;
 diffvarnSpinData = varnSpinData_B-varnSpinData_NB;
 
-subplot(2,3,4); hold on;
-pltAnalysis(stdSpinData_NB,testCases,trialsDT2,"5us - No Bounce")
+subplot(rows,3,4); hold on;
+pltAnalysis(stdSpinData_NB,testCases,"5us - No Bounce")
 hold off;
 
-subplot(2,3,5); hold on;
-pltAnalysis(stdSpinData_B,testCases,trialsDT2,"5us - Bounce")
+subplot(rows,3,5); hold on;
+pltAnalysis(stdSpinData_B,testCases,"5us - Bounce")
 hold off;
 
-subplot(2,3,6); hold on;
-pltAnalysis(diffStdSpinData,testCases,trialsDT2,"Difference")
+subplot(rows,3,6); hold on;
+pltAnalysis(diffStdSpinData,testCases,"Difference")
 hold off;
 
+
+stdSpinData_NB  = load("./dataAnalysis/stdData-NoBounce-dt3").stdSpinData;
+varnSpinData_NB = load("./dataAnalysis/varData-NoBounce-dt3").varnSpinData;
+
+stdSpinData_B   = load("./dataAnalysis/stdData-Bounce-dt3").stdSpinData;
+varnSpinData_B  = load("./dataAnalysis/varData-Bounce-dt3").varnSpinData;
+
+diffStdSpinData = stdSpinData_B-stdSpinData_NB;
+diffvarnSpinData = varnSpinData_B-varnSpinData_NB;
+
+subplot(rows,3,7); hold on;
+pltAnalysis(stdSpinData_NB,testCases,"1us - No Bounce")
+hold off;
+
+subplot(rows,3,8); hold on;
+pltAnalysis(stdSpinData_B,testCases,"1us - Bounce")
+hold off;
+
+subplot(rows,3,9); hold on;
+pltAnalysis(diffStdSpinData,testCases,"Difference")
+hold off;
 
